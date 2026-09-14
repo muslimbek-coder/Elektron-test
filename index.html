@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bilim Dueli Pro — 1-11 sinf uchun bepul test va viktorina savollari</title>
-<meta name="description" content="Bilim Dueli Pro — do'stlaringiz yoki robotga qarshi intellektual bellashing! O'z bilimingizni sinang va intellektual shouda g'olib bo'ling.">
+<meta name="description" content="1-11 sinf o'quvchilari uchun barcha fanlardan bepul test savollari, viktorina va bilim duellari. Do'stlaringiz bilan raqobatlashing yoki yakka tartibda mashq qiling.">
 <link rel="canonical" href="https://bilimler-dueli.vercel.app/">
-<link rel="icon" type="image/png" href="ico.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Bilim Dueli Pro — 1-11 sinf uchun bepul test va viktorina savollari">
 <meta property="og:description" content="1-11 sinf o'quvchilari uchun barcha fanlardan bepul test savollari, viktorina va bilim duellari.">
@@ -17,9 +16,6 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Bilim Dueli Pro — 1-11 sinf uchun bepul test va viktorina savollari">
 <meta name="twitter:description" content="1-11 sinf o'quvchilari uchun barcha fanlardan bepul test savollari, viktorina va bilim duellari.">
-<meta property="og:title" content="Bilim Dueli Pro — Mukammal Savollar Bazasi">
-<meta property="og:description" content="Do'stlar va robotga qarshi bilim duelida bellashing. Onlayn intellektual o'yin!">
-<meta property="og:image" content="https://bilimler-dueli.vercel.app/og-image.jpg">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -889,9 +885,23 @@
   .auth-close{
     position:absolute; top:14px; right:16px; z-index:1; background:none; border:none;
     color:var(--chalk-dim); font-size:20px; cursor:pointer; line-height:1; transition:color .2s;
-    display:none; /* Kirish majburiy bo'lgani uchun ro'yxatdan o'tmagan mehmon uchun yopish tugmasi ko'rsatilmaydi */
+    display:inline-block; /* Kirish endi majburiy emas — mehmon istalgan vaqt oynani yopishi mumkin */
   }
   .auth-close:hover{ color:var(--chalk); }
+  .guest-save-cta{
+    margin-top:20px;
+    padding:16px 18px;
+    border-radius:var(--radius);
+    border:1px dashed var(--line-strong);
+    background: linear-gradient(135deg, var(--p2-dim), transparent);
+    text-align:center;
+  }
+  .guest-save-cta .guest-save-text{
+    margin:0 0 12px;
+    font-size:14px;
+    color:var(--chalk);
+    line-height:1.5;
+  }
 
   /* --- To'liq profil tahriri --- */
   .profile-stage{
@@ -1889,6 +1899,14 @@
       <button id="changeGradeBtn">Sinf/Rejimni o'zgartirish</button>
       <button class="share" id="shareBtn">📤 Natijani ulashish</button>
     </div>
+
+    <div id="guestSaveCta" class="guest-save-cta" style="display:none;">
+      <p class="guest-save-text">🔒 Siz mehmon sifatida o'ynadingiz. Natijangizni doimiy saqlash, reyting jadvalida ismingiz bilan qatnashish va yutuqlaringizni to'plash uchun ro'yxatdan o'ting.</p>
+      <div class="btn-row">
+        <button class="primary" id="guestSaveRegisterBtn">Ro'yxatdan o'tish</button>
+        <button id="guestSaveDismissBtn">Keyinroq</button>
+      </div>
+    </div>
   </div>
 
   <footer>Bilim Dueli — Dasturchi: Muslimbek</footer>
@@ -2164,25 +2182,30 @@ function isDuelLike(){ return !isSoloLike(); }
 // ---- Sozlamalarni saqlash (ism va ovoz balandligi) ----
 const SETTINGS_KEY = 'bilimDueliSettings';
 
-// Majburiy kirishni tekshirish funksiyasi
+// O'yin endi mehmon sifatida ham boshlanishi mumkin — kirish majburiy emas.
+// Funksiya orqaga moslik uchun saqlanadi va doim true qaytaradi.
 function checkAuthOrShowModal() {
-  const user = getCurrentUser();
-  if (!user) {
-    openAuthGate("O'yinni boshlash uchun avval ro'yxatdan o'ting yoki tizimga kiring!");
-    return false; // Kirilmagan
-  }
-  return true; // Kirilgan
+  return true;
 }
 
-// Auth modalni "majburiy" holatda ochish (yopish tugmasi yashirin, qulf yozuvi ko'rinadi)
-function openAuthGate(message) {
+// Auth modalni ochish uchun umumiy yordamchi funksiya.
+// forced=true bo'lsa (masalan, eski/qulflangan holatlar uchun) yopish tugmasi va qulf yozuvi ko'rsatiladi.
+// Aks holda (standart, "ixtiyoriy" holat) foydalanuvchi istalgan vaqt oynani yopishi mumkin.
+function openAuthModal(opts) {
+  opts = opts || {};
   const err = document.getElementById('authError');
-  if (err) err.textContent = message || '';
+  if (err) err.textContent = opts.forced ? (opts.message || '') : '';
   const closeBtn = document.getElementById('closeAuth');
-  if (closeBtn) closeBtn.style.display = 'none';
+  if (closeBtn) closeBtn.style.display = opts.forced ? 'none' : 'inline-block';
   const lockNote = document.getElementById('authLockNote');
-  if (lockNote) lockNote.style.display = 'flex';
+  if (lockNote) lockNote.style.display = opts.forced ? 'flex' : 'none';
+  if (opts.tab) switchAuthTab(opts.tab);
   document.getElementById('authOverlay').classList.add('open');
+}
+
+// Eski nom bilan chaqiriladigan joylar uchun moslik (endi ixtiyoriy holatda ochadi)
+function openAuthGate(message) {
+  openAuthModal({ forced: false, message: message });
 }
 
 function startSolo() { gameMode = 'solo'; }
@@ -2192,7 +2215,15 @@ function startBot() { gameMode = 'bot'; }
 
 // --- Login/Chiqish tugmalari va reyting modal tugmalari (sahifa ochilganda darhol ulanadi) ---
 document.getElementById('openAuthBtn')?.addEventListener('click', () => {
-  document.getElementById('authOverlay').classList.add('open');
+  openAuthModal({ forced: false });
+});
+
+document.getElementById('guestSaveRegisterBtn')?.addEventListener('click', () => {
+  openAuthModal({ forced: false, tab: 'register' });
+});
+document.getElementById('guestSaveDismissBtn')?.addEventListener('click', () => {
+  const cta = document.getElementById('guestSaveCta');
+  if (cta) cta.style.display = 'none';
 });
 
 document.getElementById('closeAuth')?.addEventListener('click', () => {
@@ -2286,7 +2317,7 @@ document.getElementById('profileAvatarBig')?.addEventListener('click', () => {
 });
 function openProfileModal() {
   const user = getCurrentUser();
-  if (!user) { document.getElementById('authOverlay').classList.add('open'); return; }
+  if (!user) { openAuthModal({ forced: false, message: "Profilni ko'rish uchun ro'yxatdan o'ting yoki kiring." }); return; }
   fillDateSelects();
   const rec = getUserRecord(user) || { username: user };
   const big = document.getElementById('profileAvatarBig');
@@ -7958,6 +7989,10 @@ function finishGame(){
   if (isDuelLike() && !usesBot()) { results.push(updatePlayerStats(p2.name, p2, p2Won)); }
   renderNewAchvToast(results);
   renderAchievements(results[0].name, results[0].stats);
+
+  // Mehmon sifatida o'ynagan bo'lsa, natijani saqlash uchun ro'yxatdan o'tishni taklif qilamiz
+  const guestCta = document.getElementById('guestSaveCta');
+  if (guestCta) guestCta.style.display = getCurrentUser() ? 'none' : 'block';
 }
 
 function renderWeakAreas() {
@@ -8347,12 +8382,16 @@ function closeAuthModal() {
   document.getElementById('authOverlay').classList.remove('open');
   const err = document.getElementById('authError');
   if (err) { err.textContent = ''; err.classList.remove('shake'); }
+  if (getCurrentUser()) {
+    const guestCta = document.getElementById('guestSaveCta');
+    if (guestCta) guestCta.style.display = 'none';
+  }
 }
 
 function logout() {
   localStorage.removeItem(CURRENT_USER_KEY);
   updateUserUI();
-  openAuthGate("Davom etish uchun qayta kiring yoki ro'yxatdan o'ting.");
+  showFxToast("Mehmon rejimida davom etishingiz mumkin", 'var(--gold)');
 }
 
 function displayNameOf(rec, fallback) {
@@ -8400,9 +8439,6 @@ document.addEventListener('DOMContentLoaded', () => {
     fillRegionSelect(document.getElementById('profRegion'), e.target.value);
   });
   updateUserUI();
-  if (!getCurrentUser()) {
-    openAuthGate("Davom etish uchun avval ro'yxatdan o'ting yoki tizimga kiring.");
-  }
   applyDeepLinkFromURL();
 });
 
