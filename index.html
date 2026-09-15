@@ -1449,6 +1449,96 @@
     padding:12px 8px;
     line-height:1.25;
   }
+  .mode-select{ display:grid; gap:12px; }
+  .mode-group{
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+  }
+  .mode-group-special{ border-color:rgba(124,92,255,.28); }
+  .mode-group-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:0 0 10px;
+    color:var(--chalk);
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.35px;
+    text-transform:uppercase;
+  }
+  .mode-group-special .mode-group-title{ cursor:pointer; list-style:none; }
+  .mode-group-special .mode-group-title::-webkit-details-marker{ display:none; }
+  .mode-group-icon{
+    display:grid; place-items:center; width:26px; height:26px; flex:0 0 26px;
+    border-radius:8px; background:rgba(33,230,193,.12); color:var(--p2); font-size:15px;
+  }
+  .mode-group-special .mode-group-icon{ background:rgba(124,92,255,.16); color:#a99aff; }
+  .mode-group-count{
+    display:grid; place-items:center; min-width:22px; height:22px; padding:0 6px;
+    margin-left:auto; border-radius:999px; background:var(--bg2); color:var(--chalk-dim); font-size:10px;
+  }
+  .mode-group-chevron{ color:var(--chalk-dim); font-size:17px; transition:transform .25s ease; }
+  .mode-group-special[open] .mode-group-chevron{ transform:rotate(180deg); }
+  .mode-group-special .mode-grid{ animation:panelPaneIn .28s ease both; }
+  body.theme-light .mode-group{ background:rgba(255,255,255,.56); }
+  #game{
+    position:fixed;
+    inset:0;
+    z-index:40;
+    width:100%;
+    height:100vh;
+    max-width:none;
+    overflow-y:auto;
+    margin:0;
+    padding:32px max(20px, calc((100vw - 920px) / 2)) 64px;
+    border:0;
+    border-radius:0;
+    background:
+      radial-gradient(700px 420px at 8% 0%, rgba(33,230,193,.12), transparent 65%),
+      radial-gradient(700px 420px at 92% 100%, rgba(255,122,61,.12), transparent 65%),
+      linear-gradient(180deg, rgba(7,9,26,.98), rgba(12,16,36,.98));
+    box-shadow:none;
+    animation:gameStageIn .42s cubic-bezier(.2,.9,.3,1.1) both;
+  }
+  body.theme-light #game{
+    background:
+      radial-gradient(700px 420px at 8% 0%, rgba(124,92,255,.12), transparent 65%),
+      radial-gradient(700px 420px at 92% 100%, rgba(255,140,70,.12), transparent 65%),
+      linear-gradient(180deg, #f7f3ff, #fffaf5);
+  }
+  @keyframes gameStageIn{
+    from{ opacity:0; transform:scale(.985); }
+    to{ opacity:1; transform:none; }
+  }
+  #game .scoreboard, #game .track, #game .turn-row, #game .timer-track,
+  #game .question-card, #game .options, #game .blitz-arena, #game .explain-box{
+    width:min(100%, 920px);
+    margin-left:auto;
+    margin-right:auto;
+  }
+  #game .scoreboard{ margin-top:4px; }
+  #game .question-card{ box-shadow:0 22px 60px rgba(0,0,0,.24), inset 0 0 0 1px rgba(255,255,255,.03); }
+  #pauseOverlay{ z-index:1000; }
+  #pauseOverlay.open{
+    display:flex !important;
+    visibility:visible;
+    opacity:1;
+    pointer-events:auto;
+  }
+  #pauseOverlay.open .pause-box{
+    position:relative;
+    z-index:1001;
+    visibility:visible;
+    opacity:1;
+  }
+  #game::-webkit-scrollbar{ width:10px; }
+  #game::-webkit-scrollbar-thumb{ background:var(--line-strong); border-radius:10px; }
+  @media(max-width:640px){
+    #game{ padding:20px 14px 44px; }
+  }
   .radio-btn.active.mode-blitz{
     border-color:#7c5cff;
     background:rgba(124,92,255,.16);
@@ -1469,6 +1559,9 @@
     background:rgba(124,92,255,.12);
     box-shadow:0 0 0 3px rgba(124,92,255,.16);
   }
+  .radio-btn.active.mode-chain{ border-color:var(--gold); background:rgba(255,209,102,.14); box-shadow:0 0 0 3px rgba(255,209,102,.16); }
+  .radio-btn.active.mode-speed{ border-color:var(--p2); background:rgba(33,230,193,.14); box-shadow:0 0 0 3px rgba(33,230,193,.16); }
+  .radio-btn.active.mode-handicap{ border-color:#ff9f43; background:rgba(255,159,67,.14); box-shadow:0 0 0 3px rgba(255,159,67,.16); }
   .mode-hint{
     text-align:center;
     margin:10px 0 0;
@@ -1766,6 +1859,182 @@
   .results-table th, .results-table td{ border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; }
   .muted-note{ color:var(--chalk-dim); font-size:13px; line-height:1.5; }
 
+  /* Teacher panel motion and interaction polish */
+  @keyframes panelPaneIn{
+    from{ opacity:0; transform:translateY(12px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes editorIn{
+    from{ opacity:0; transform:translateY(16px) scale(.98); }
+    to{ opacity:1; transform:none; }
+  }
+  @keyframes buttonSheen{
+    from{ transform:translateX(-130%) skewX(-18deg); }
+    to{ transform:translateX(180%) skewX(-18deg); }
+  }
+  .teacher-overlay .modal-box{
+    box-shadow:0 28px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .tp-tabs{
+    position:relative;
+    padding:5px;
+    background:rgba(7,9,26,.34);
+    border:1px solid var(--line);
+    border-radius:16px;
+  }
+  .tp-tab{
+    position:relative;
+    overflow:hidden;
+    flex:1 1 130px;
+    min-height:42px;
+    border-color:transparent;
+    transition:color .25s ease, transform .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .tp-tab::after,
+  .tp-row > button::after,
+  .proposal-accept-btn::after,
+  .proposal-reject-btn::after{
+    content:'';
+    position:absolute;
+    inset:0 auto 0 -45%;
+    width:32%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.26), transparent);
+    transform:skewX(-18deg);
+    pointer-events:none;
+  }
+  .tp-tab:hover{ transform:translateY(-2px); color:var(--chalk); border-color:var(--line-strong); }
+  .tp-tab.active{
+    background:linear-gradient(120deg, rgba(33,230,193,.2), rgba(255,209,102,.12));
+    border-color:rgba(33,230,193,.55);
+    box-shadow:0 8px 20px rgba(33,230,193,.12), inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .tp-tab.active::before{
+    content:'';
+    position:absolute;
+    left:18%; right:18%; bottom:3px; height:2px;
+    border-radius:2px;
+    background:linear-gradient(90deg,var(--p2),var(--gold));
+    animation:fadeUp .3s ease both;
+  }
+  .tp-tab:hover::after,
+  .tp-row > button:hover::after,
+  .proposal-accept-btn:hover::after,
+  .proposal-reject-btn:hover::after{ animation:buttonSheen .65s ease; }
+  .tp-pane.active{ animation:panelPaneIn .38s cubic-bezier(.2,.9,.3,1.1) both; }
+  .tp-field label{ transition:color .2s ease, transform .2s ease; }
+  .tp-field:focus-within label{ color:var(--p2); transform:translateX(3px); }
+  .tp-row input, .tp-row select, .tp-field input, .tp-field select, .tp-field textarea{
+    border-color:rgba(245,241,228,.16);
+    transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease, background .2s ease;
+  }
+  .tp-row input:hover, .tp-row select:hover, .tp-field input:hover, .tp-field select:hover, .tp-field textarea:hover{
+    border-color:rgba(33,230,193,.42);
+  }
+  .tp-row input:focus, .tp-row select:focus, .tp-field input:focus, .tp-field select:focus, .tp-field textarea:focus{
+    outline:none;
+    border-color:var(--p2);
+    box-shadow:0 0 0 3px rgba(33,230,193,.13), 0 8px 20px rgba(33,230,193,.08);
+    transform:translateY(-1px);
+  }
+  .tp-row > button, .proposal-accept-btn, .proposal-reject-btn{
+    position:relative;
+    overflow:hidden;
+    border-radius:11px;
+    transition:transform .2s ease, border-color .2s ease, color .2s ease, background .2s ease, box-shadow .2s ease;
+  }
+  .tp-row > button:hover, .proposal-accept-btn:hover, .proposal-reject-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 24px rgba(0,0,0,.2);
+  }
+  #saveTestBtn{
+    background:linear-gradient(110deg,var(--p2),var(--gold));
+    color:#07151a;
+    border-color:transparent;
+    font-weight:800;
+  }
+  #addQuestionBtn{ border-color:rgba(255,209,102,.42); color:var(--gold); }
+  #addQuestionBtn:hover{ background:rgba(255,209,102,.1); }
+  .q-editor{
+    position:relative;
+    overflow:hidden;
+    border-style:solid;
+    border-color:rgba(33,230,193,.2);
+    background:linear-gradient(145deg, rgba(33,230,193,.06), rgba(255,122,61,.04));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    animation:editorIn .42s cubic-bezier(.2,.9,.3,1.1) both;
+    transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .question-builder-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin:20px 0 8px;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:linear-gradient(110deg, rgba(33,230,193,.1), rgba(255,209,102,.06));
+  }
+  .question-builder-head strong{ display:block; margin-top:3px; font-family:'Space Grotesk',sans-serif; font-size:16px; }
+  .question-builder-kicker{ color:var(--p2); font-size:10px; font-weight:800; letter-spacing:1.4px; }
+  .question-count-label{ color:var(--gold); font-size:12px; font-weight:700; white-space:nowrap; }
+  .question-builder{ display:grid; gap:12px; }
+  .q-editor-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .q-number{
+    display:grid; place-items:center; width:34px; height:34px; flex:0 0 34px;
+    border-radius:10px; background:linear-gradient(135deg,var(--p2),var(--gold));
+    color:#07151a; font-family:var(--font-poster); font-size:18px;
+  }
+  .q-editor-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--chalk); }
+  .q-remove{
+    margin-left:auto; width:30px; height:30px; display:grid; place-items:center;
+    border:1px solid rgba(255,77,94,.28); border-radius:9px; background:rgba(255,77,94,.06);
+    color:var(--warn); cursor:pointer; font-size:20px; line-height:1;
+    transition:transform .2s ease, background .2s ease, border-color .2s ease;
+  }
+  .q-remove:hover{ transform:rotate(8deg) scale(1.08); background:rgba(255,77,94,.16); border-color:var(--warn); }
+  .q-label{ display:block; margin:0 0 6px; color:var(--chalk-dim); font-size:11px; font-weight:700; letter-spacing:.35px; text-transform:uppercase; }
+  .q-editor .q-text{ display:block; width:100%; resize:vertical; min-height:62px; margin-bottom:12px; }
+  .q-option{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .q-option > span{ display:grid; place-items:center; width:26px; height:26px; flex:0 0 26px; border-radius:8px; background:var(--bg2); color:var(--p2); font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:12px; }
+  .q-option input{ min-width:0; flex:1; }
+  .q-footer-row{ display:grid; grid-template-columns:auto 72px 1fr; align-items:center; gap:9px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .q-footer-row .q-label{ margin:0; }
+  .q-footer-row .q-ans{ width:72px; }
+  .q-footer-row .q-exp{ min-width:0; }
+  .q-editor::before{
+    content:'';
+    position:absolute;
+    left:0; top:0; bottom:0; width:3px;
+    background:linear-gradient(180deg,var(--p2),var(--gold),var(--p1));
+  }
+  .q-editor:hover{ transform:translateY(-3px); border-color:rgba(33,230,193,.5); box-shadow:0 12px 28px rgba(0,0,0,.16); }
+  .q-editor:nth-child(2){ animation-delay:.05s; }
+  .q-editor:nth-child(3){ animation-delay:.1s; }
+  .q-editor:nth-child(4){ animation-delay:.15s; }
+  .q-editor:nth-child(5){ animation-delay:.2s; }
+  .q-editor .q-text, .q-editor .q-opt, .q-editor .q-exp, .q-editor .q-ans{
+    transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .q-editor .q-text:focus, .q-editor .q-opt:focus, .q-editor .q-exp:focus, .q-editor .q-ans:focus{
+    outline:none;
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(255,209,102,.12);
+  }
+  #teacherClassesList, #testProposalsList{ animation:panelPaneIn .45s ease both; }
+  #testProposalsList .tp-card{ border-left:3px solid var(--gold); }
+  .proposal-accept-btn{ background:var(--p2); border-color:var(--p2); color:#061b18; font-weight:700; }
+  .proposal-reject-btn{ border-color:rgba(255,77,94,.45); color:var(--warn); background:rgba(255,77,94,.06); }
+  .proposal-reject-btn:hover{ background:rgba(255,77,94,.14); }
+  @media(max-width:640px){
+    .tp-tabs{ gap:5px; }
+    .tp-tab{ flex-basis:calc(50% - 5px); }
+    .tp-row > button{ flex:1 1 150px; }
+    .q-footer-row{ grid-template-columns:1fr 72px; }
+    .q-footer-row .q-label{ grid-column:1 / -1; }
+    .q-footer-row .q-exp{ grid-column:1 / -1; }
+  }
+
 </style>
 </head>
 <body>
@@ -1801,7 +2070,7 @@
     <button class="dev-btn" id="devBtn" data-i18n="btnDev">👨‍💻 Dasturchi haqida</button>
   </div>
 
-  <div class="modal-overlay" id="pauseOverlay">
+  <div class="modal-overlay" id="pauseOverlay" aria-hidden="true">
     <div class="modal-box pause-box">
       <h2 data-i18n="pauseTitle">⏸ Pauza</h2>
       <p class="modal-sub" data-i18n="pauseSub">O'yin to'xtatildi. Davom etishga tayyor bo'lganingizda tugmani bosing.</p>
@@ -1826,54 +2095,54 @@
   <div class="modal-overlay dev-overlay" id="devOverlay">
     <div class="dev-stage" id="devStage">
       <div class="dev-aurora" aria-hidden="true"></div>
-      <button class="dev-close-xl" id="closeDev" title="Yopish">&times;</button>
+      <button class="dev-close-xl" id="closeDev" title="Yopish" data-i18n-title="close">&times;</button>
       <div class="dev-hero-xl">
         <div class="dev-photo-wrap">
           <div class="dev-ring" aria-hidden="true"></div>
           <img src="o'zim.jpg" alt="Muslimbek" class="dev-img">
         </div>
         <div>
-          <p class="dev-kicker">Loyiha muallifi</p>
+          <p class="dev-kicker" data-i18n="devAuthor">Loyiha muallifi</p>
           <h2>Muslimbek Husanboyev</h2>
-          <p class="dev-loc">📍 Farg'ona viloyati • Web dasturchi</p>
+          <p class="dev-loc" data-i18n="devLocation">📍 Farg'ona viloyati • Web dasturchi</p>
           <div class="dev-tags">
-            <div class="dev-tag">Dasturchi</div>
-            <div class="dev-tag">Bilim Dueli</div>
-            <div class="dev-tag">Savollar Bazasi</div>
+            <div class="dev-tag" data-i18n="devTagDeveloper">Dasturchi</div>
+            <div class="dev-tag" data-i18n="devTagProduct">Bilim Dueli</div>
+            <div class="dev-tag" data-i18n="devTagQuestions">Savollar Bazasi</div>
             <div class="dev-tag">UI / UX</div>
           </div>
           <div class="dev-stats">
-            <div class="dev-stat" style="animation-delay:.05s"><b>11</b><span>Sinf bazasi</span></div>
-            <div class="dev-stat" style="animation-delay:.12s"><b>7</b><span>O'yin rejimi</span></div>
-            <div class="dev-stat" style="animation-delay:.19s"><b>∞</b><span>Yangi g'oyalar</span></div>
+            <div class="dev-stat" style="animation-delay:.05s"><b>11</b><span data-i18n="devStatGrades">Sinf bazasi</span></div>
+            <div class="dev-stat" style="animation-delay:.12s"><b>7</b><span data-i18n="devStatModes">O'yin rejimi</span></div>
+            <div class="dev-stat" style="animation-delay:.19s"><b>∞</b><span data-i18n="devStatIdeas">Yangi g'oyalar</span></div>
           </div>
         </div>
       </div>
 
       <div class="dev-body-xl">
         <article class="dev-tile" style="animation-delay:.08s">
-          <p class="dev-sec-title">👋 Men haqimda</p>
-          <p class="dev-sec-text">Men — Muslimbek Husanboyev, Farg'ona viloyatidan bo'lgan yosh va izlanuvchan web dasturchiman. Raqamli dunyoda qiziqarli, foydali va zamonaviy loyihalar yaratishga katta qiziqish bildiraman. Hozirda web dasturlash bo'yicha bilim va tajribamni rivojlantirib, turli xil interaktiv web-loyihalar ustida ishlayapman. Men uchun dasturlash — shunchaki kod yozish emas, balki g'oyani haqiqiy loyihaga aylantirish vositasidir.</p>
+          <p class="dev-sec-title" data-i18n="devAboutTitle">👋 Men haqimda</p>
+          <p class="dev-sec-text" data-i18n="devAboutText">Men — Muslimbek Husanboyev, Farg'ona viloyatidan bo'lgan yosh va izlanuvchan web dasturchiman. Raqamli dunyoda qiziqarli, foydali va zamonaviy loyihalar yaratishga katta qiziqish bildiraman. Hozirda web dasturlash bo'yicha bilim va tajribamni rivojlantirib, turli xil interaktiv web-loyihalar ustida ishlayapman. Men uchun dasturlash — shunchaki kod yozish emas, balki g'oyani haqiqiy loyihaga aylantirish vositasidir.</p>
         </article>
         <article class="dev-tile" style="animation-delay:.16s">
-          <p class="dev-sec-title">🚀 Loyihalarim</p>
-          <p class="dev-sec-text">Mening dasturlashdagi ilk loyihalarimdan biri — aynan shu "Bilim Dueli", ta'limga yo'naltirilgan test tizimi. Har bir sinf uchun ma'lumotlar alohida tashkil etilgan. Loyihani yaratish jarayonida interfeys, mantiq va o'yin hissini birlashtirishni o'rgandim. Bu yo'ldagi muhim qadamlarimdan biri.</p>
+          <p class="dev-sec-title" data-i18n="devProjectsTitle">🚀 Loyihalarim</p>
+          <p class="dev-sec-text" data-i18n="devProjectsText">Mening dasturlashdagi ilk loyihalarimdan biri — aynan shu "Bilim Dueli", ta'limga yo'naltirilgan test tizimi. Har bir sinf uchun ma'lumotlar alohida tashkil etilgan. Loyihani yaratish jarayonida interfeys, mantiq va o'yin hissini birlashtirishni o'rgandim. Bu yo'ldagi muhim qadamlarimdan biri.</p>
         </article>
         <article class="dev-tile" style="animation-delay:.24s">
-          <p class="dev-sec-title">🧠 Qiziqishlarim</p>
+          <p class="dev-sec-title" data-i18n="devInterestsTitle">🧠 Qiziqishlarim</p>
           <div class="interest-grid">
-            <div class="interest-chip">🌐 Web dasturlash</div>
-            <div class="interest-chip">💡 Yangi loyihalar yaratish</div>
-            <div class="interest-chip">🎨 Zamonaviy UI/UX dizayn</div>
-            <div class="interest-chip">⚙️ Interaktiv web-saytlar</div>
-            <div class="interest-chip">📚 Yangi texnologiyalarni o'rganish</div>
-            <div class="interest-chip">🎮 O'yin va kreativ loyihalar</div>
-            <div class="interest-chip">🔥 O'z ustimda doimiy ishlash</div>
+            <div class="interest-chip" data-i18n="devInterestWeb">🌐 Web dasturlash</div>
+            <div class="interest-chip" data-i18n="devInterestProjects">💡 Yangi loyihalar yaratish</div>
+            <div class="interest-chip" data-i18n="devInterestDesign">🎨 Zamonaviy UI/UX dizayn</div>
+            <div class="interest-chip" data-i18n="devInterestInteractive">⚙️ Interaktiv web-saytlar</div>
+            <div class="interest-chip" data-i18n="devInterestTech">📚 Yangi texnologiyalarni o'rganish</div>
+            <div class="interest-chip" data-i18n="devInterestGames">🎮 O'yin va kreativ loyihalar</div>
+            <div class="interest-chip" data-i18n="devInterestGrowth">🔥 O'z ustimda doimiy ishlash</div>
           </div>
         </article>
         <article class="dev-tile dev-goal-xl" style="animation-delay:.32s">
-          <p class="dev-goal-title">🎯 Maqsadim</p>
-          <p class="dev-goal-text">Kelajakda o'z bilim va tajribamni yanada rivojlantirib, professional dasturchi bo'lish hamda odamlar uchun haqiqatan ham foydali bo'lgan katta loyihalarni yaratish — asosiy maqsadlarimdan biri. Men hali dasturlash yo'lining boshidaman, ammo har bir yangi loyiha men uchun yangi tajriba va yangi imkoniyatdir.</p>
+          <p class="dev-goal-title" data-i18n="devGoalTitle">🎯 Maqsadim</p>
+          <p class="dev-goal-text" data-i18n="devGoalText">Kelajakda o'z bilim va tajribamni yanada rivojlantirib, professional dasturchi bo'lish hamda odamlar uchun haqiqatan ham foydali bo'lgan katta loyihalarni yaratish — asosiy maqsadlarimdan biri. Men hali dasturlash yo'lining boshidaman, ammo har bir yangi loyiha men uchun yangi tajriba va yangi imkoniyatdir.</p>
         </article>
       </div>
 
@@ -1900,14 +2169,26 @@
 
     <p class="section-label" data-i18n="labelMode">O'yin Rejimi</p>
     <div class="mode-select">
-      <div class="radio-group mode-grid">
+      <div class="mode-group">
+        <div class="mode-group-title"><span class="mode-group-icon">⚔</span><span data-i18n="modeBasic">Oddiy rejimlar</span><span class="mode-group-count">3</span></div>
+        <div class="radio-group mode-grid">
         <div class="radio-btn active" id="modePVP" onclick="setMode('pvp')" data-i18n="modePvp">⚔️ Do'st bilan</div>
         <div class="radio-btn bot-opt" id="modeBot" onclick="setMode('bot')" data-i18n="modeBot">🤖 Robot bilan</div>
         <div class="radio-btn solo-opt" id="modeSolo" onclick="setMode('solo')" data-i18n="modeSolo">📚 Yakka mashq</div>
+        </div>
+      </div>
+      <details class="mode-group mode-group-special" open>
+        <summary class="mode-group-title"><span class="mode-group-icon">✦</span><span data-i18n="modeSpecial">Qiziqarli / maxsus rejimlar</span><span class="mode-group-count">7</span><span class="mode-group-chevron">⌄</span></summary>
+        <div class="radio-group mode-grid">
         <div class="radio-btn mode-blitz" id="modeBlitz" onclick="setMode('blitz')" data-i18n="modeBlitz">⚡ Blits</div>
         <div class="radio-btn mode-surv" id="modeSurvival" onclick="setMode('survival')" data-i18n="modeSurvival">❤️ Omon qolish</div>
         <div class="radio-btn mode-sudden" id="modeSudden" onclick="setMode('sudden')" data-i18n="modeSudden">☠️ To'satdan o'lim</div>
         <div class="radio-btn mode-exam" id="modeExam" onclick="setMode('exam')" data-i18n="modeExam">📝 Imtihon</div>
+        <div class="radio-btn mode-chain" id="modeChain" onclick="setMode('chain')" data-i18n="modeChain">🔗 Zanjir</div>
+        <div class="radio-btn mode-speed" id="modeSpeed" onclick="setMode('speed')" data-i18n="modeSpeed">⏱️ Teskari vaqt</div>
+        <div class="radio-btn mode-handicap" id="modeHandicap" onclick="setMode('handicap')" data-i18n="modeHandicap">⚖️ Handikap</div>
+        </div>
+      </details>
       </div>
       <p class="mode-hint" id="modeHint">Ikkalangiz navbatma-navbat javob berasiz.</p>
     </div>
@@ -2180,7 +2461,9 @@
         <button type="button" class="primary" id="createClassBtn" data-i18n="btnCreateClass">Sinf ochish</button>
         <button type="button" id="becomeTeacherBtn" data-i18n="btnBecomeTeacher">Men o'qituvchiman</button>
       </div>
+      <p id="parentProposalHint" class="muted-note" style="display:none;" data-i18n="parentHint">Farzandingiz sinfiga test taklif qilish uchun "Test yaratish" bo'limidan foydalaning. Taklif ustoz tasdiqlaganidan keyin o'quvchilarga ko'rinadi.</p>
       <div id="teacherClassesList"></div>
+      <div id="testProposalsList"></div>
     </div>
     <div class="tp-pane" id="tpCreate">
       <div class="tp-field">
@@ -2197,15 +2480,22 @@
       </div>
       <div class="tp-row" style="margin-top:0;">
         <div class="tp-field" style="flex:1; min-width:180px; margin-bottom:0;">
-          <label>Faollashish vaqti</label>
+          <label data-i18n="activateAt">Faollashish vaqti</label>
           <input type="datetime-local" id="testScheduleStart">
         </div>
         <div class="tp-field" style="flex:1; min-width:180px; margin-bottom:0;">
-          <label>Tugash vaqti</label>
+          <label data-i18n="finishAt">Tugash vaqti</label>
           <input type="datetime-local" id="testScheduleEnd">
         </div>
       </div>
-      <div id="testQuestionsBox"></div>
+      <div class="question-builder-head">
+        <div>
+          <span class="question-builder-kicker" data-i18n="builderTitle">TEST KONSTRUKTORI</span>
+          <strong data-i18n="questions">Savollar</strong>
+        </div>
+          <span id="questionCountLabel" class="question-count-label" data-i18n="questionCount">0 ta savol</span>
+      </div>
+      <div id="testQuestionsBox" class="question-builder"></div>
       <div class="tp-row">
         <button type="button" id="addQuestionBtn" data-i18n="btnAddQuestion">+ Savol qo'shish</button>
         <button type="button" class="primary" id="saveTestBtn" data-i18n="btnSaveTest">Testni saqlash</button>
@@ -2219,14 +2509,14 @@
       <div id="teacherKpis" class="teacher-kpis"></div>
       <div class="teacher-chart-wrap">
         <div class="teacher-chart-head">
-          <span>Sinf natijasi</span>
+          <span data-i18n="classResult">Sinf natijasi</span>
           <span id="teacherChartLegend">Avg: 0%</span>
         </div>
         <div id="teacherChart" class="teacher-chart"></div>
       </div>
       <div id="teacherSummaryList" class="teacher-summary-list"></div>
       <div class="teacher-export-row">
-        <button type="button" id="exportTeacherCsvBtn" class="export-btn">Export CSV</button>
+        <button type="button" id="exportTeacherCsvBtn" class="export-btn" data-i18n="exportCsv">Export CSV</button>
       </div>
       <div id="teacherStudentsInsight" class="teacher-detail-grid"></div>
       <div id="resultsTableWrap"></div>
@@ -2254,31 +2544,31 @@
     <div class="profile-head">
       <div class="profile-avatar-big" id="profileAvatarBig" title="Rasmni o'zgartirish">?</div>
       <div class="profile-head-text">
-        <h2>👤 Profil</h2>
-        <p class="profile-meta" id="profileMeta">Ma'lumotlaringizni yangilang</p>
+        <h2 data-i18n="profileTitle">👤 Profil</h2>
+        <p class="profile-meta" id="profileMeta" data-i18n="profileSubtitle">Ma'lumotlaringizni yangilang</p>
       </div>
     </div>
     <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
     <div class="profile-btn-row" style="justify-content:flex-start; margin-bottom:14px;">
-      <button class="auth-submit" id="chooseAvatarBtn" type="button">🖼️ Rasm tanlash</button>
-      <button class="ghost-btn" id="removeAvatarBtn" type="button">Rasmni o'chirish</button>
+      <button class="auth-submit" id="chooseAvatarBtn" type="button" data-i18n="chooseImage">🖼️ Rasm tanlash</button>
+      <button class="ghost-btn" id="removeAvatarBtn" type="button" data-i18n="removeImage">Rasmni o'chirish</button>
     </div>
     <form id="profileForm" class="auth-form" onsubmit="handleProfileSave(event)">
       <div class="auth-grid">
         <div class="auth-field">
-          <label>Ism</label>
+          <label data-i18n="firstName">Ism</label>
           <input type="text" id="profFirstName" required>
         </div>
         <div class="auth-field">
-          <label>Familya</label>
+          <label data-i18n="lastName">Familya</label>
           <input type="text" id="profLastName" required>
         </div>
         <div class="auth-field span-2">
-          <label>Tug'ilgan kuningiz</label>
+          <label data-i18n="birthDate">Tug'ilgan kuningiz</label>
           <div class="auth-date-row">
             <select id="profBirthDay" required></select>
             <select id="profBirthMonth" required>
-              <option value="">Oy</option>
+              <option value="" data-i18n="month">Oy</option>
               <option value="1">Yanvar</option>
               <option value="2">Fevral</option>
               <option value="3">Mart</option>
@@ -2300,7 +2590,7 @@
           <input type="text" id="profUsername" required minlength="3" maxlength="20">
         </div>
         <div class="auth-field">
-          <label>Davlat</label>
+          <label data-i18n="country">Davlat</label>
           <select id="profCountry" required>
             <option value="O'zbekiston">O'zbekiston</option>
             <option value="Qozog'iston">Qozog'iston</option>
@@ -2313,28 +2603,28 @@
           </select>
         </div>
         <div class="auth-field">
-          <label>Viloyat / hudud</label>
+          <label data-i18n="region">Viloyat / hudud</label>
           <select id="profRegion" required></select>
         </div>
         <div class="auth-field">
-          <label>Yashash joyi</label>
+          <label data-i18n="city">Yashash joyi</label>
           <input type="text" id="profCity" required>
         </div>
         <div class="auth-field span-2">
-          <label>Bio</label>
+          <label data-i18n="bio">Bio</label>
           <textarea id="profBio" maxlength="280" placeholder="O'zingiz haqingizda yozing..."></textarea>
         </div>
         <div class="auth-field">
-          <label>Joriy parol (parolni o'zgartirish uchun)</label>
-          <input type="password" id="profOldPassword" autocomplete="current-password" placeholder="Ixtiyoriy">
+          <label data-i18n="currentPassword">Joriy parol (parolni o'zgartirish uchun)</label>
+          <input type="password" id="profOldPassword" autocomplete="current-password" data-i18n-placeholder="optional" placeholder="Ixtiyoriy">
         </div>
         <div class="auth-field">
-          <label>Yangi parol</label>
-          <input type="password" id="profNewPassword" autocomplete="new-password" minlength="4" placeholder="O'zgarmasa, bo'sh qoldiring">
+          <label data-i18n="newPassword">Yangi parol</label>
+          <input type="password" id="profNewPassword" autocomplete="new-password" minlength="4" data-i18n-placeholder="keepEmpty" placeholder="O'zgarmasa, bo'sh qoldiring">
         </div>
       </div>
       <div class="profile-save-row">
-        <button type="submit" class="auth-submit">Saqlash</button>
+        <button type="submit" class="auth-submit" data-i18n="save">Saqlash</button>
       </div>
     </form>
     <p class="profile-msg" id="profileMsg"></p>
@@ -2351,6 +2641,8 @@ let p2 = { name:'', score:0, correct:0, total:0, combo:0, maxCombo:0 };
 let round = 0;
 let TOTAL_ROUNDS = 10;
 let TIME_LIMIT = 20;
+let speedTimeLeft = 60;
+const SPEED_TOTAL_TIME = 60;
 let timer = null;
 let timeLeft = TIME_LIMIT;
 let currentAnswer = null;
@@ -2380,7 +2672,8 @@ let skipStartCountdown = false;
 
 const MODE_IDS = {
   pvp:'modePVP', bot:'modeBot', solo:'modeSolo',
-  blitz:'modeBlitz', survival:'modeSurvival', sudden:'modeSudden', exam:'modeExam'
+  blitz:'modeBlitz', survival:'modeSurvival', sudden:'modeSudden', exam:'modeExam',
+  chain:'modeChain', speed:'modeSpeed', handicap:'modeHandicap'
 };
 const MODE_HINTS = {
   pvp: "hintPvp",
@@ -2389,7 +2682,7 @@ const MODE_HINTS = {
   blitz: "hintBlitz",
   survival: "hintSurvival",
   sudden: "hintSudden",
-  exam: "hintExam"
+  exam: "hintExam", chain:"hintChain", speed:"hintSpeed", handicap:"hintHandicap"
 };
 
 const LANG_KEY = 'bilimDueliLang';
@@ -2397,6 +2690,7 @@ const CLASS_KEY = 'bilimDueliClasses';
 const TEST_KEY = 'bilimDueliClassTests';
 const MEMBER_KEY = 'bilimDueliClassMembers';
 const CRESULT_KEY = 'bilimDueliClassResults';
+const PROPOSAL_KEY = 'bilimDueliTestProposals';
 let currentLang = 'uz';
 let activeClassTest = null;
 try { currentLang = localStorage.getItem(LANG_KEY) || 'uz'; } catch (e) {}
@@ -2404,6 +2698,7 @@ if (!['uz','ru','en'].includes(currentLang)) currentLang = 'uz';
 
 const I18N = {
   uz: {
+    pageTitle:"Bilim Dueli Pro — 1–11-sinflar uchun bepul testlar va viktorinalar", metaDescription:"1–11-sinf o'quvchilari uchun barcha fanlardan bepul testlar, viktorinalar va bilim duellari.",
     heroEyebrow:"Sinflarga ajratilgan intellektual jang",
     heroSub:"1-sinfdan 11-sinfgacha mustaqil savollar toplami bilan yangilangan duel!",
     btnLeaderboard:"🏆 Reyting jadvali", btnTeacher:"👨‍🏫 O'qituvchi / ota-ona", btnDev:"👨‍💻 Dasturchi haqida",
@@ -2412,14 +2707,14 @@ const I18N = {
     lbTitle:"🏆 Reyting", lbSub:"Ushbu qurilmada saqlangan eng yaxshi natijalar",
     joinClassTitle:"Sinf kodi", joinClassHint:"O'qituvchi bergan kodni kiriting — o'z sinfingiz testlarini ishlang yoki farzand natijasini ko'ring.",
     phClassCode:"Masalan: 7A3K9P", phChildUser:"Farzand username (ota-ona)", btnJoin:"Qo'shilish",
-    labelMode:"O'yin Rejimi", modePvp:"⚔️ Do'st bilan", modeBot:"🤖 Robot bilan", modeSolo:"📚 Yakka mashq",
-    modeBlitz:"⚡ Blits", modeSurvival:"❤️ Omon qolish", modeSudden:"☠️ To'satdan o'lim", modeExam:"📝 Imtihon",
+    labelMode:"O'yin Rejimi", modeBasic:"Oddiy rejimlar", modeSpecial:"Qiziqarli / maxsus rejimlar", modePvp:"⚔️ Do'st bilan", modeBot:"🤖 Robot bilan", modeSolo:"📚 Yakka mashq",
+    modeBlitz:"⚡ Blits", modeSurvival:"❤️ Omon qolish", modeSudden:"☠️ To'satdan o'lim", modeExam:"📝 Imtihon", modeChain:"🔗 Zanjir", modeSpeed:"⏱️ Teskari vaqt", modeHandicap:"⚖️ Handikap",
     hintPvp:"Ikkalangiz navbatma-navbat javob berasiz.", hintBot:"Robot bilan navbatma-navbat duel.",
     hintSolo:"Har bir fandan 5 tadan savol — raqibsiz mashq.",
     hintBlitz:"Bir xil savol. Kim tezroq va to'g'ri javob bersa, o'sha ochko oladi. Do'st bilan: 1–4 va 7–0 tugmalari.",
     hintSurvival:"3 ta hayot. Har xato — 1 hayot. Oxirgi hayot tugasa o'yin tugaydi.",
     hintSudden:"Birinchi xato qilgan mag'lub. Qisqa va keskin duel.",
-    hintExam:"25 ta savol. Oxirida foiz, fan tahlili va xatolarni qayta ishlash.",
+    hintExam:"25 ta savol. Oxirida foiz, fan tahlili va xatolarni qayta ishlash.", hintChain:"Har bir to'g'ri javob zanjirni kuchaytiradi. Xato qilsangiz, zanjir tugaydi.", hintSpeed:"60 soniyada imkon qadar ko'p savolga to'g'ri javob bering.", hintHandicap:"Oldinda borayotgan o'yinchiga kamroq vaqt beriladi.",
     labelRival:"Raqib", vsFriend:"Do'st", vsBot:"Robot", labelTime:"Vaqt Chegarasi",
     timeSlow:"Sekin", timeMedium:"O'rtacha", timeFast:"Tez",
     labelBotDiff:"Robot Qiyinchilik Darajasi", diffEasy:"Oson", diffMedium:"O'rta", diffHard:"Qiyin",
@@ -2427,7 +2722,7 @@ const I18N = {
     labelGrade:"Sinfni tanlang", labelSubject:"Fanni tanlang", allSubjects:"Barcha fanlar",
     gradeN:"{n}-sinf", startDuel:"Duelni boshlash", startPractice:"Mashqni boshlash",
     startBlitz:"Blitsni boshlash", startSurvival:"Omon qolishni boshlash",
-    startSudden:"O'lim raundini boshlash", startExam:"Imtihonni boshlash", startBtn:"Boshlash",
+    startSudden:"O'lim raundini boshlash", startExam:"Imtihonni boshlash", startChain:"Zanjirni boshlash", startSpeed:"Speed-runni boshlash", startHandicap:"Handikapni boshlash", startBtn:"Boshlash",
     suddenBanner:"BIRINCHI XATO — MAG'LUB", thPlayer:"O'yinchi", thScore:"Ball", thCorrect:"To'g'ri / Umumiy", thCombo:"Eng baland Combo",
     weakTitle:"Fan bo'yicha zaif tomonlar tahlili", mistakesTitle:"Xato javoblar bo'yicha tushuntirishlar",
     btnReplay:"Qayta o'ynash", btnRetryMistakes:"Xatolarni qayta ishlash", btnChangeGrade:"Sinf/Rejimni o'zgartirish", btnShare:"📤 Natijani ulashish",
@@ -2457,9 +2752,15 @@ const I18N = {
     pickGradeFirst:"Iltimos, avval maktab sinfini tanlang.", noQuestions:"Bu sinf uchun savollar topilmadi.",
     streak:"Seriya: {n}", livesLeft:"{n} hayot qoldi", livesOver:"Hayot tugadi!", correctToast:"To'g'ri!", wrongToast:"Xato",
     winToast:"G'alaba!", loadingQ:"Savol yuklanmoqda...", questionN:"Savol {n}", extraRound:"Qo'shimcha Raund!", roundN:"Raund {n}",
-    turnBoth:"Bir vaqtda!", startClassTest:"Sinf testini boshlash"
+    turnBoth:"Bir vaqtda!", speedProgress:"Vaqt: {n} soniya", chainResult:"Zanjir yakunlandi! 🔗", speedResult:"Speed-run yakunlandi! ⏱️", startClassTest:"Sinf testini boshlash",
+    builderTitle:"TEST KONSTRUKTORI", questions:"Savollar", questionCount:"{n} ta savol", questionText:"Savol matni", questionExample:"Masalan: O'zbekiston poytaxti qaysi shahar?", deleteQuestion:"Savolni o'chirish", activateAt:"Faollashish vaqti", finishAt:"Tugash vaqti", classResult:"Sinf natijasi", exportCsv:"Export CSV",
+    parentHint:"Farzandingiz sinfiga test taklif qilish uchun «Test yaratish» bo'limidan foydalaning. Taklif ustoz tasdiqlaganidan keyin o'quvchilarga ko'rinadi.", parentProposals:"Ota-ona test takliflari", myProposals:"Siz yuborgan test takliflari", pending:"Kutilmoqda", accepted:"Tasdiqlangan", rejected:"Rad etilgan", approve:"Tasdiqlash", reject:"Rad etish", proposalSend:"Ustozga test taklif qilish", proposalSent:"Test taklifi ustozga yuborildi.", proposalApproved:"Test tasdiqlandi.", proposalRejected:"Test taklifi rad etildi.",
+    profileTitle:"👤 Profil", profileSubtitle:"Ma'lumotlaringizni yangilang", chooseImage:"🖼️ Rasm tanlash", removeImage:"Rasmni o'chirish", firstName:"Ism", lastName:"Familya", birthDate:"Tug'ilgan kuningiz", month:"Oy", day:"Kun", year:"Yil", country:"Davlat", region:"Viloyat / hudud", city:"Yashash joyi", bio:"Bio", currentPassword:"Joriy parol (parolni o'zgartirish uchun)", newPassword:"Yangi parol", optional:"Ixtiyoriy", keepEmpty:"O'zgarmasa, bo'sh qoldiring", save:"Saqlash", close:"Yopish",
+    devAuthor:"Loyiha muallifi", devLocation:"📍 Farg'ona viloyati • Web dasturchi", devTagDeveloper:"Dasturchi", devTagProduct:"Bilim Dueli", devTagQuestions:"Savollar Bazasi", devStatGrades:"Sinf bazasi", devStatModes:"O'yin rejimi", devStatIdeas:"Yangi g'oyalar", devAboutTitle:"👋 Men haqimda", devAboutText:"Men — Muslimbek Husanboyev, Farg'ona viloyatidan bo'lgan yosh va izlanuvchan web dasturchiman. Raqamli dunyoda qiziqarli, foydali va zamonaviy loyihalar yaratishga katta qiziqish bildiraman. Hozirda web dasturlash bo'yicha bilim va tajribamni rivojlantirib, turli xil interaktiv web-loyihalar ustida ishlayapman. Men uchun dasturlash — shunchaki kod yozish emas, balki g'oyani haqiqiy loyihaga aylantirish vositasidir.", devProjectsTitle:"🚀 Loyihalarim", devProjectsText:"Mening dasturlashdagi ilk loyihalarimdan biri — aynan shu «Bilim Dueli», ta'limga yo'naltirilgan test tizimi. Har bir sinf uchun ma'lumotlar alohida tashkil etilgan. Loyihani yaratish jarayonida interfeys, mantiq va o'yin hissini birlashtirishni o'rgandim. Bu yo'ldagi muhim qadamlarimdan biri.", devInterestsTitle:"🧠 Qiziqishlarim", devInterestWeb:"🌐 Web dasturlash", devInterestProjects:"💡 Yangi loyihalar yaratish", devInterestDesign:"🎨 Zamonaviy UI/UX dizayn", devInterestInteractive:"⚙️ Interaktiv web-saytlar", devInterestTech:"📚 Yangi texnologiyalarni o'rganish", devInterestGames:"🎮 O'yin va kreativ loyihalar", devInterestGrowth:"🔥 O'z ustimda doimiy ishlash", devGoalTitle:"🎯 Maqsadim", devGoalText:"Kelajakda o'z bilim va tajribamni yanada rivojlantirib, professional dasturchi bo'lish hamda odamlar uchun haqiqatan ham foydali bo'lgan katta loyihalarni yaratish — asosiy maqsadlarimdan biri. Men hali dasturlash yo'lining boshidaman, ammo har bir yangi loyiha men uchun yangi tajriba va yangi imkoniyatdir.",
+    statsClasses:"Sinflar", statsStudents:"O'quvchilar", statsTests:"Testlar", bestClass:"Eng yaxshi sinf", overallResult:"Umumiy natija", noData:"Mavjud emas", noResultDetail:"Natija mavjud emas.", classLabel:"Sinf", parentLabel:"Ota-ona", teacherLabel:"Ustoz", weakTopic:"Zaif mavzu", average:"o'rtacha", student:"O'quvchi", joinParentOk:"Sinfga ota-ona sifatida qo'shildingiz.", joinStudentOk:"Sinfga muvaffaqiyatli qo'shildingiz.", childNotFound:"Farzand username topilmadi.", joinChildFirst:"Avval farzandingiz sinfiga qo'shiling.", keepQuestion:"Kamida bitta savol qoldiring."
   },
   ru: {
+    pageTitle:"Bilim Dueli Pro — бесплатные тесты и викторины для 1–11 классов", metaDescription:"Бесплатные тесты, викторины и интеллектуальные дуэли по всем предметам для учеников 1–11 классов.",
     heroEyebrow:"Интеллектуальная битва по классам",
     heroSub:"Обновлённая дуэль с отдельными вопросами с 1 по 11 класс!",
     btnLeaderboard:"🏆 Рейтинг", btnTeacher:"👨‍🏫 Учитель / родители", btnDev:"👨‍💻 О разработчике",
@@ -2468,14 +2769,14 @@ const I18N = {
     lbTitle:"🏆 Рейтинг", lbSub:"Лучшие результаты, сохранённые на этом устройстве",
     joinClassTitle:"Код класса", joinClassHint:"Введите код учителя — пройдите тесты класса или смотрите результаты ребёнка.",
     phClassCode:"Например: 7A3K9P", phChildUser:"Username ребёнка (для родителя)", btnJoin:"Присоединиться",
-    labelMode:"Режим игры", modePvp:"⚔️ С другом", modeBot:"🤖 С роботом", modeSolo:"📚 Одиночная практика",
-    modeBlitz:"⚡ Блиц", modeSurvival:"❤️ Выживание", modeSudden:"☠️ Внезапная смерть", modeExam:"📝 Экзамен",
+    labelMode:"Режим игры", modeBasic:"Обычные режимы", modeSpecial:"Интересные / специальные режимы", modePvp:"⚔️ С другом", modeBot:"🤖 С роботом", modeSolo:"📚 Одиночная практика",
+    modeBlitz:"⚡ Блиц", modeSurvival:"❤️ Выживание", modeSudden:"☠️ Внезапная смерть", modeExam:"📝 Экзамен", modeChain:"🔗 Цепочка", modeSpeed:"⏱️ Обратный отсчёт", modeHandicap:"⚖️ Гандикап",
     hintPvp:"Вы отвечаете по очереди.", hintBot:"Дуэль с роботом по очереди.",
     hintSolo:"По 5 вопросов из каждого предмета — без соперника.",
     hintBlitz:"Один вопрос. Кто быстрее и правильно ответит — тот получает очки. С другом: клавиши 1–4 и 7–0.",
     hintSurvival:"3 жизни. Ошибка — минус жизнь. Игра кончается, когда жизни закончатся.",
     hintSudden:"Первая ошибка — поражение. Короткая и жёсткая дуэль.",
-    hintExam:"25 вопросов. В конце процент, анализ предметов и работа над ошибками.",
+    hintExam:"25 вопросов. В конце процент, анализ предметов и работа над ошибками.", hintChain:"Каждый правильный ответ усиливает цепочку. Ошибка завершает цепочку.", hintSpeed:"За 60 секунд ответьте правильно на как можно больше вопросов.", hintHandicap:"Лидирующий игрок получает меньше времени.",
     labelRival:"Соперник", vsFriend:"Друг", vsBot:"Робот", labelTime:"Лимит времени",
     timeSlow:"Медленно", timeMedium:"Средне", timeFast:"Быстро",
     labelBotDiff:"Сложность робота", diffEasy:"Легко", diffMedium:"Средне", diffHard:"Сложно",
@@ -2483,7 +2784,7 @@ const I18N = {
     labelGrade:"Выберите класс", labelSubject:"Выберите предмет", allSubjects:"Все предметы",
     gradeN:"{n}-й класс", startDuel:"Начать дуэль", startPractice:"Начать практику",
     startBlitz:"Начать блиц", startSurvival:"Начать выживание",
-    startSudden:"Начать раунд смерти", startExam:"Начать экзамен", startBtn:"Старт",
+    startSudden:"Начать раунд смерти", startExam:"Начать экзамен", startChain:"Начать цепочку", startSpeed:"Начать speed-run", startHandicap:"Начать гандикап", startBtn:"Старт",
     suddenBanner:"ПЕРВАЯ ОШИБКА — ПОРАЖЕНИЕ", thPlayer:"Игрок", thScore:"Очки", thCorrect:"Верно / Всего", thCombo:"Макс. комбо",
     weakTitle:"Слабые стороны по предметам", mistakesTitle:"Пояснения к ошибкам",
     btnReplay:"Играть снова", btnRetryMistakes:"Разобрать ошибки", btnChangeGrade:"Сменить класс/режим", btnShare:"📤 Поделиться",
@@ -2513,9 +2814,15 @@ const I18N = {
     pickGradeFirst:"Сначала выберите школьный класс.", noQuestions:"Для этого класса нет вопросов.",
     streak:"Серия: {n}", livesLeft:"Осталось жизней: {n}", livesOver:"Жизни закончились!", correctToast:"Верно!", wrongToast:"Ошибка",
     winToast:"Победа!", loadingQ:"Загрузка вопроса...", questionN:"Вопрос {n}", extraRound:"Доп. раунд!", roundN:"Раунд {n}",
-    turnBoth:"Одновременно!", startClassTest:"Начать тест класса"
+    turnBoth:"Одновременно!", speedProgress:"Время: {n} сек.", chainResult:"Цепочка завершена! 🔗", speedResult:"Speed-run завершён! ⏱️", startClassTest:"Начать тест класса",
+    builderTitle:"КОНСТРУКТОР ТЕСТА", questions:"Вопросы", questionCount:"Вопросов: {n}", questionText:"Текст вопроса", questionExample:"Например: Какой город является столицей Узбекистана?", deleteQuestion:"Удалить вопрос", activateAt:"Начало теста", finishAt:"Окончание теста", classResult:"Результат класса", exportCsv:"Экспорт CSV",
+    parentHint:"Чтобы предложить тест для класса ребёнка, используйте раздел «Создать тест». Тест станет виден ученикам после одобрения учителем.", parentProposals:"Предложения родителей", myProposals:"Ваши предложения тестов", pending:"На рассмотрении", accepted:"Одобрено", rejected:"Отклонено", approve:"Одобрить", reject:"Отклонить", proposalSend:"Предложить тест учителю", proposalSent:"Предложение теста отправлено учителю.", proposalApproved:"Тест одобрен.", proposalRejected:"Предложение отклонено.",
+    profileTitle:"👤 Профиль", profileSubtitle:"Обновите свои данные", chooseImage:"🖼️ Выбрать фото", removeImage:"Удалить фото", firstName:"Имя", lastName:"Фамилия", birthDate:"Дата рождения", month:"Месяц", day:"День", year:"Год", country:"Страна", region:"Область / регион", city:"Город", bio:"О себе", currentPassword:"Текущий пароль (для смены пароля)", newPassword:"Новый пароль", optional:"Необязательно", keepEmpty:"Оставьте пустым, если не меняете", save:"Сохранить", close:"Закрыть",
+    devAuthor:"Автор проекта", devLocation:"📍 Ферганская область • Веб-разработчик", devTagDeveloper:"Разработчик", devTagProduct:"Bilim Dueli", devTagQuestions:"База вопросов", devStatGrades:"Классов в базе", devStatModes:"Игровых режимов", devStatIdeas:"Новые идеи", devAboutTitle:"👋 Обо мне", devAboutText:"Я — Муслимбек Хусанбоев, молодой и любознательный веб-разработчик из Ферганской области. Мне интересно создавать полезные, современные и интерактивные проекты. Сейчас я развиваю свои знания в веб-разработке и работаю над разными веб-проектами. Для меня программирование — это не просто код, а способ превращать идеи в настоящие продукты.", devProjectsTitle:"🚀 Мои проекты", devProjectsText:"Bilim Dueli — один из моих первых проектов в программировании, образовательная система тестов. Данные для каждого класса организованы отдельно. Создавая проект, я учился объединять интерфейс, логику и игровое настроение. Это один из важных шагов на моём пути.", devInterestsTitle:"🧠 Мои интересы", devInterestWeb:"🌐 Веб-разработка", devInterestProjects:"💡 Создание новых проектов", devInterestDesign:"🎨 Современный UI/UX-дизайн", devInterestInteractive:"⚙️ Интерактивные сайты", devInterestTech:"📚 Изучение новых технологий", devInterestGames:"🎮 Игры и творческие проекты", devInterestGrowth:"🔥 Постоянное развитие", devGoalTitle:"🎯 Моя цель", devGoalText:"Моя цель — развиваться как профессиональный разработчик и создавать большие проекты, действительно полезные для людей. Я только в начале пути, но каждый новый проект приносит мне опыт и новые возможности.",
+    statsClasses:"Классы", statsStudents:"Ученики", statsTests:"Тесты", bestClass:"Лучший класс", overallResult:"Общий результат", noData:"Нет данных", noResultDetail:"Результатов нет.", classLabel:"Класс", parentLabel:"Родитель", teacherLabel:"Учитель", weakTopic:"Слабая тема", average:"в среднем", student:"Ученик", joinParentOk:"Вы присоединились к классу как родитель.", joinStudentOk:"Вы успешно присоединились к классу.", childNotFound:"Username ребёнка не найден.", joinChildFirst:"Сначала присоединитесь к классу ребёнка.", keepQuestion:"Оставьте хотя бы один вопрос."
   },
   en: {
+    pageTitle:"Bilim Dueli Pro — free tests and quizzes for grades 1–11", metaDescription:"Free tests, quizzes and knowledge duels for students in grades 1–11.",
     heroEyebrow:"Grade-based knowledge duel",
     heroSub:"An updated duel with independent question sets from grades 1 to 11!",
     btnLeaderboard:"🏆 Leaderboard", btnTeacher:"👨‍🏫 Teacher / parent", btnDev:"👨‍💻 About the developer",
@@ -2524,14 +2831,14 @@ const I18N = {
     lbTitle:"🏆 Leaderboard", lbSub:"Best scores saved on this device",
     joinClassTitle:"Class code", joinClassHint:"Enter the teacher's code to take class tests or view your child's results.",
     phClassCode:"e.g. 7A3K9P", phChildUser:"Child username (parent)", btnJoin:"Join",
-    labelMode:"Game mode", modePvp:"⚔️ With a friend", modeBot:"🤖 Vs robot", modeSolo:"📚 Solo practice",
-    modeBlitz:"⚡ Blitz", modeSurvival:"❤️ Survival", modeSudden:"☠️ Sudden death", modeExam:"📝 Exam",
+    labelMode:"Game mode", modeBasic:"Classic modes", modeSpecial:"Fun / special modes", modePvp:"⚔️ With a friend", modeBot:"🤖 Vs robot", modeSolo:"📚 Solo practice",
+    modeBlitz:"⚡ Blitz", modeSurvival:"❤️ Survival", modeSudden:"☠️ Sudden death", modeExam:"📝 Exam", modeChain:"🔗 Chain", modeSpeed:"⏱️ Reverse time", modeHandicap:"⚖️ Handicap",
     hintPvp:"You take turns answering.", hintBot:"Turn-based duel against the robot.",
     hintSolo:"5 questions per subject — no opponent.",
     hintBlitz:"Same question. Fastest correct answer scores. With a friend: keys 1–4 and 7–0.",
     hintSurvival:"3 lives. Each miss costs 1 life. The game ends when lives run out.",
     hintSudden:"First mistake loses. Short and sharp.",
-    hintExam:"25 questions. Percent, subject analysis and mistake review at the end.",
+    hintExam:"25 questions. Percent, subject analysis and mistake review at the end.", hintChain:"Each correct answer strengthens the chain. One mistake ends it.", hintSpeed:"Answer as many questions correctly as possible in 60 seconds.", hintHandicap:"The player in the lead gets less time.",
     labelRival:"Opponent", vsFriend:"Friend", vsBot:"Robot", labelTime:"Time limit",
     timeSlow:"Slow", timeMedium:"Medium", timeFast:"Fast",
     labelBotDiff:"Robot difficulty", diffEasy:"Easy", diffMedium:"Medium", diffHard:"Hard",
@@ -2539,7 +2846,7 @@ const I18N = {
     labelGrade:"Choose a grade", labelSubject:"Choose a subject", allSubjects:"All subjects",
     gradeN:"Grade {n}", startDuel:"Start duel", startPractice:"Start practice",
     startBlitz:"Start blitz", startSurvival:"Start survival",
-    startSudden:"Start sudden death", startExam:"Start exam", startBtn:"Start",
+    startSudden:"Start sudden death", startExam:"Start exam", startChain:"Start chain", startSpeed:"Start speed-run", startHandicap:"Start handicap", startBtn:"Start",
     suddenBanner:"FIRST MISS — YOU LOSE", thPlayer:"Player", thScore:"Score", thCorrect:"Correct / Total", thCombo:"Best combo",
     weakTitle:"Weak areas by subject", mistakesTitle:"Explanations for mistakes",
     btnReplay:"Play again", btnRetryMistakes:"Retry mistakes", btnChangeGrade:"Change grade/mode", btnShare:"📤 Share result",
@@ -2569,7 +2876,12 @@ const I18N = {
     pickGradeFirst:"Please choose a school grade first.", noQuestions:"No questions found for this grade.",
     streak:"Streak: {n}", livesLeft:"{n} lives left", livesOver:"No lives left!", correctToast:"Correct!", wrongToast:"Wrong",
     winToast:"Victory!", loadingQ:"Loading question...", questionN:"Question {n}", extraRound:"Extra round!", roundN:"Round {n}",
-    turnBoth:"At the same time!", startClassTest:"Start class test"
+    turnBoth:"At the same time!", speedProgress:"Time: {n}s", chainResult:"Chain complete! 🔗", speedResult:"Speed-run complete! ⏱️", startClassTest:"Start class test",
+    builderTitle:"TEST BUILDER", questions:"Questions", questionCount:"{n} questions", questionText:"Question text", questionExample:"Example: Which city is the capital of Uzbekistan?", deleteQuestion:"Delete question", activateAt:"Start time", finishAt:"End time", classResult:"Class result", exportCsv:"Export CSV",
+    parentHint:"To suggest a test for your child's class, use the “Create test” section. Students will see it after the teacher approves it.", parentProposals:"Parent test proposals", myProposals:"Your test proposals", pending:"Pending", accepted:"Approved", rejected:"Rejected", approve:"Approve", reject:"Reject", proposalSend:"Suggest test to teacher", proposalSent:"Test proposal sent to the teacher.", proposalApproved:"Test approved.", proposalRejected:"Test proposal rejected.",
+    profileTitle:"👤 Profile", profileSubtitle:"Update your information", chooseImage:"🖼️ Choose photo", removeImage:"Remove photo", firstName:"First name", lastName:"Last name", birthDate:"Date of birth", month:"Month", day:"Day", year:"Year", country:"Country", region:"Region", city:"City", bio:"Bio", currentPassword:"Current password (to change password)", newPassword:"New password", optional:"Optional", keepEmpty:"Leave empty if unchanged", save:"Save", close:"Close",
+    devAuthor:"Project author", devLocation:"📍 Fergana region • Web developer", devTagDeveloper:"Developer", devTagProduct:"Bilim Dueli", devTagQuestions:"Question bank", devStatGrades:"Grades covered", devStatModes:"Game modes", devStatIdeas:"New ideas", devAboutTitle:"👋 About me", devAboutText:"I am Muslimbek Husanboyev, a young and curious web developer from the Fergana region. I enjoy creating useful, modern and interactive projects. I am currently improving my web development skills and working on different web projects. To me, programming is not just code, but a way to turn ideas into real products.", devProjectsTitle:"🚀 My projects", devProjectsText:"Bilim Dueli is one of my first programming projects, an educational testing system. Data for each grade is organized separately. While building it, I learned to combine interface, logic and a sense of play. It is an important step in my journey.", devInterestsTitle:"🧠 My interests", devInterestWeb:"🌐 Web development", devInterestProjects:"💡 Creating new projects", devInterestDesign:"🎨 Modern UI/UX design", devInterestInteractive:"⚙️ Interactive websites", devInterestTech:"📚 Learning new technologies", devInterestGames:"🎮 Games and creative projects", devInterestGrowth:"🔥 Continuous self-improvement", devGoalTitle:"🎯 My goal", devGoalText:"My goal is to grow into a professional developer and create large projects that are genuinely useful to people. I am still at the beginning of my programming journey, but every new project brings new experience and opportunities.",
+    statsClasses:"Classes", statsStudents:"Students", statsTests:"Tests", bestClass:"Best class", overallResult:"Overall result", noData:"No data", noResultDetail:"No results.", classLabel:"Class", parentLabel:"Parent", teacherLabel:"Teacher", weakTopic:"Weak topic", average:"average", student:"Student", joinParentOk:"You joined the class as a parent.", joinStudentOk:"You successfully joined the class.", childNotFound:"Child username was not found.", joinChildFirst:"Join your child's class first.", keepQuestion:"Keep at least one question."
   }
 };
 
@@ -2581,6 +2893,9 @@ function t(key, vars){
 }
 function applyLang(){
   document.documentElement.lang = currentLang === 'ru' ? 'ru' : (currentLang === 'en' ? 'en' : 'uz');
+  document.title = t('pageTitle');
+  const description = document.querySelector('meta[name="description"]');
+  if (description) description.content = t('metaDescription');
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const k = el.getAttribute('data-i18n');
     if (k) el.textContent = t(k);
@@ -2589,10 +2904,18 @@ function applyLang(){
     const k = el.getAttribute('data-i18n-placeholder');
     if (k) el.setAttribute('placeholder', t(k));
   });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const k = el.getAttribute('data-i18n-title');
+    if (k) el.setAttribute('title', t(k));
+  });
   document.querySelectorAll('.grade-chip[data-grade]').forEach(chip => {
     chip.textContent = t('gradeN', { n: chip.dataset.grade });
   });
+  document.querySelectorAll('.subject-grid .grade-chip[data-subject]').forEach(chip => {
+    chip.textContent = subjectLabel(chip.dataset.subject);
+  });
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+  applyDynamicTranslations();
   const hint = document.getElementById('modeHint');
   if (hint) hint.textContent = t(MODE_HINTS[gameMode] || 'hintPvp');
   const startBtn = document.getElementById('startBtn');
@@ -2601,11 +2924,79 @@ function applyLang(){
   if (typeof refreshSetupUI === 'function') refreshSetupUI();
   renderClassTestsMini();
 }
+function applyDynamicTranslations(){
+  const questionBox = document.getElementById('testQuestionsBox');
+  questionBox?.querySelectorAll('.q-editor').forEach((editor, index) => {
+    const text = editor.querySelector('.q-text');
+    const title = editor.querySelector('.q-editor-title');
+    const remove = editor.querySelector('.q-remove');
+    const textLabel = text?.previousElementSibling;
+    if (title) title.textContent = `${t('qLabel')} ${index + 1}`;
+    if (textLabel?.classList.contains('q-label')) textLabel.textContent = t('questionText');
+    if (text) text.placeholder = t('questionExample');
+    if (remove) { remove.title = t('deleteQuestion'); remove.setAttribute('aria-label', t('deleteQuestion')); }
+  });
+  updateQuestionCount();
+  const monthSelect = document.getElementById('profBirthMonth');
+  if (monthSelect) {
+    const month = monthSelect.value;
+    const names = currentLang === 'ru'
+      ? ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
+      : currentLang === 'en'
+        ? ['January','February','March','April','May','June','July','August','September','October','November','December']
+        : ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+    monthSelect.innerHTML = `<option value="">${t('month')}</option>` + names.map((name, index) => `<option value="${index + 1}">${name}</option>`).join('');
+    monthSelect.value = month;
+  }
+  const countrySelect = document.getElementById('profCountry');
+  if (countrySelect) {
+    const country = countrySelect.value;
+    const names = currentLang === 'ru'
+      ? { "O'zbekiston":"Узбекистан", "Qozog'iston":"Казахстан", "Qirg'iziston":"Кыргызстан", "Tojikiston":"Таджикистан", "Turkmaniston":"Туркменистан", "Rossiya":"Россия", "Turkiya":"Турция", Boshqa:"Другая страна" }
+      : currentLang === 'en'
+        ? { "O'zbekiston":"Uzbekistan", "Qozog'iston":"Kazakhstan", "Qirg'iziston":"Kyrgyzstan", "Tojikiston":"Tajikistan", "Turkmaniston":"Turkmenistan", "Rossiya":"Russia", "Turkiya":"Turkey", Boshqa:"Other" }
+        : { "O'zbekiston":"O'zbekiston", "Qozog'iston":"Qozog'iston", "Qirg'iziston":"Qirg'iziston", "Tojikiston":"Tojikiston", "Turkmaniston":"Turkmaniston", "Rossiya":"Rossiya", "Turkiya":"Turkiya", Boshqa:"Boshqa" };
+    Array.from(countrySelect.options).forEach(option => { option.textContent = names[option.value] || option.value; });
+    countrySelect.value = country;
+  }
+}
 function setLang(lang){
   currentLang = lang;
   try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
   applyLang();
 }
+
+const SUBJECT_LABELS = {
+  "Matematika": { ru:"Математика", en:"Mathematics" },
+  "Ona tili": { ru:"Родной язык", en:"Native language" },
+  "O'qish savodxonligi": { ru:"Читательская грамотность", en:"Reading literacy" },
+  "Tabiiy fanlar": { ru:"Естественные науки", en:"Natural sciences" },
+  "Tarbiya": { ru:"Воспитание", en:"Education" },
+  "Ingliz tili": { ru:"Английский язык", en:"English" },
+  "Rus tili": { ru:"Русский язык", en:"Russian" },
+  "Informatika": { ru:"Информатика", en:"Computer science" },
+  "Tarix": { ru:"История", en:"History" },
+  "O'zbekiston tarixi": { ru:"История Узбекистана", en:"History of Uzbekistan" },
+  "Geografiya": { ru:"География", en:"Geography" },
+  "Biologiya": { ru:"Биология", en:"Biology" },
+  "Fizika": { ru:"Физика", en:"Physics" },
+  "Kimyo": { ru:"Химия", en:"Chemistry" },
+  "Adabiyot": { ru:"Литература", en:"Literature" },
+  "Iqtisod": { ru:"Экономика", en:"Economics" },
+  "Huquq": { ru:"Право", en:"Law" },
+  "Texnologiya": { ru:"Технология", en:"Technology" },
+  "Jismoniy tarbiya": { ru:"Физическая культура", en:"Physical education" },
+  "Musiqa": { ru:"Музыка", en:"Music" },
+  "Tasviriy san'at": { ru:"Изобразительное искусство", en:"Visual arts" },
+  "Astronomiya": { ru:"Астрономия", en:"Astronomy" }
+};
+function subjectLabel(subject){
+  return SUBJECT_LABELS[subject]?.[currentLang] || subject;
+}
+
+document.querySelectorAll('.lang-btn').forEach(button => {
+  button.addEventListener('click', () => setLang(button.dataset.lang));
+});
 
 function readStore(key, fallback){
   try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch (e) { return fallback; }
@@ -2617,6 +3008,7 @@ function getClasses(){ return readStore(CLASS_KEY, []); }
 function getClassTests(){ return readStore(TEST_KEY, []); }
 function getMembers(){ return readStore(MEMBER_KEY, []); }
 function getClassResults(){ return readStore(CRESULT_KEY, []); }
+function getTestProposals(){ return readStore(PROPOSAL_KEY, []); }
 function makeCode(){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let s = '';
@@ -2654,6 +3046,8 @@ function openTeacherPanel(){
   if (gradeSel && !gradeSel.options.length) {
     for (let g=1;g<=11;g++) gradeSel.insertAdjacentHTML('beforeend', `<option value="${g}">${t('gradeN',{n:g})}</option>`);
   }
+  const parentHint = document.getElementById('parentProposalHint');
+  if (parentHint) parentHint.style.display = currentUserRole() === 'parent' ? 'block' : 'none';
   fillTestQuestionEditors(Math.max(1, document.querySelectorAll('.q-editor').length || 2));
   renderTeacherPanel();
 }
@@ -2674,19 +3068,24 @@ function fillTestQuestionEditors(n){
   for (let i=have; i<n; i++){
     const d = document.createElement('div');
     d.className = 'q-editor';
-    d.innerHTML = `<label>${t('qLabel')} ${i+1}</label>
-      <input class="q-text" type="text" style="width:100%;margin:6px 0;">
+    d.innerHTML = `<div class="q-editor-head"><span class="q-number">${String(i+1).padStart(2, '0')}</span><span class="q-editor-title">${t('qLabel')} ${i+1}</span><button type="button" class="q-remove" title="${t('deleteQuestion')}" aria-label="${t('deleteQuestion')}">&times;</button></div>
+      <label class="q-label">${t('questionText')}</label>
+      <textarea class="q-text" rows="2" maxlength="300" placeholder="${t('questionExample')}"></textarea>
       <div class="opts">
-        <input class="q-opt" data-i="0" type="text" placeholder="${t('opt')} A">
-        <input class="q-opt" data-i="1" type="text" placeholder="${t('opt')} B">
-        <input class="q-opt" data-i="2" type="text" placeholder="${t('opt')} C">
-        <input class="q-opt" data-i="3" type="text" placeholder="${t('opt')} D">
+        <label class="q-option"><span>A</span><input class="q-opt" data-i="0" type="text" maxlength="120" placeholder="${t('opt')} A"></label>
+        <label class="q-option"><span>B</span><input class="q-opt" data-i="1" type="text" maxlength="120" placeholder="${t('opt')} B"></label>
+        <label class="q-option"><span>C</span><input class="q-opt" data-i="2" type="text" maxlength="120" placeholder="${t('opt')} C"></label>
+        <label class="q-option"><span>D</span><input class="q-opt" data-i="3" type="text" maxlength="120" placeholder="${t('opt')} D"></label>
       </div>
-      <label style="margin-top:8px;display:block;font-size:12px;color:var(--chalk-dim)">${t('correct')}</label>
-      <select class="q-ans"><option>A</option><option>B</option><option>C</option><option>D</option></select>
-      <input class="q-exp" type="text" placeholder="${t('explain')}" style="width:100%;margin-top:8px;">`;
+      <div class="q-footer-row"><label class="q-label">${t('correct')}</label><select class="q-ans"><option>A</option><option>B</option><option>C</option><option>D</option></select><input class="q-exp" type="text" maxlength="240" placeholder="${t('explain')}"></div>`;
     box.appendChild(d);
   }
+  updateQuestionCount();
+}
+function updateQuestionCount(){
+  const box = document.getElementById('testQuestionsBox');
+  const label = document.getElementById('questionCountLabel');
+  if (label) label.textContent = t('questionCount', { n: box?.querySelectorAll('.q-editor').length || 0 });
 }
 function collectTestQuestions(){
   const out = [];
@@ -2706,7 +3105,9 @@ function renderTeacherPanel(){
   const user = getCurrentUser();
   const role = currentUserRole();
   const classes = getClasses();
-  const mine = (user && role === 'teacher') ? classes.filter(c => c.teacherUsername.toLowerCase() === user.toLowerCase()) : classes.filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase());
+  const mine = role === 'parent'
+    ? classes.filter(c => getMembers().some(m => m.classId === c.id && m.username.toLowerCase() === (user || '').toLowerCase()))
+    : classes.filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase());
   const list = document.getElementById('teacherClassesList');
   if (list) {
     if (!mine.length) list.innerHTML = `<p class="muted-note">${t('noClasses')}</p>`;
@@ -2718,7 +3119,7 @@ function renderTeacherPanel(){
       const avg = stats.length ? Math.round(stats.reduce((sum, item) => sum + (Number(item.pct) || 0), 0) / stats.length) : 0;
       return `<div class="tp-card"><b>${escapeHtml(c.name)}</b> · ${t('gradeN',{n:c.grade})}<div class="tp-code">${classCode}</div>
         <div class="muted-note">${t('yourCode')} · ${t('members')}: ${mem.filter(m=>m.role!=='parent').length} · ${t('tabCreateTest')}: ${tests.length} · Avg ${avg}%</div>
-        <button type="button" onclick="navigator.clipboard.writeText('${classCode}')">${t('copyCode')}</button></div>`;
+        <button type="button" class="copy-class-code" data-code="${escapeHtml(classCode)}">${t('copyCode')}</button></div>`;
     }).join('');
   }
   const selIds = ['testClassSelect','resultsClassSelect'];
@@ -2726,7 +3127,7 @@ function renderTeacherPanel(){
     const sel = document.getElementById(id);
     if (!sel) return;
     const prev = sel.value;
-    sel.innerHTML = mine.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${c.code})</option>`).join('');
+    sel.innerHTML = mine.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)} (${escapeHtml(c.code)})</option>`).join('');
     if (!mine.length) sel.innerHTML = '<option value="">—</option>';
     if (prev) sel.value = prev;
   });
@@ -2736,9 +3137,38 @@ function renderTeacherPanel(){
     const tests = getClassTests().filter(x => x.classId === rClass);
     tSel.innerHTML = tests.map(x => `<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('') || '<option value="">—</option>';
   }
+  const saveTestButton = document.getElementById('saveTestBtn');
+  if (saveTestButton) {
+    saveTestButton.textContent = role === 'parent' ? t('proposalSend') : t('btnSaveTest');
+  }
+  renderTestProposals(role, user, classes);
   renderTeacherStats();
   renderClassResultsTable();
   renderClassTestsMini();
+}
+
+function renderTestProposals(role, user, classes){
+  const container = document.getElementById('testProposalsList');
+  if (!container) return;
+  const proposals = getTestProposals().filter(proposal => {
+    const cls = classes.find(item => item.id === proposal.classId);
+    if (!cls) return false;
+    return role === 'teacher'
+      ? cls.teacherUsername.toLowerCase() === (user || '').toLowerCase()
+      : proposal.parentUsername.toLowerCase() === (user || '').toLowerCase();
+  });
+  if (!proposals.length) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = `<h3 class="section-label" style="margin-top:18px;">${role === 'teacher' ? t('parentProposals') : t('myProposals')}</h3>` + proposals.map(proposal => {
+    const cls = classes.find(item => item.id === proposal.classId);
+    const status = proposal.status === 'accepted' ? t('accepted') : proposal.status === 'rejected' ? t('rejected') : t('pending');
+    const action = role === 'teacher' && proposal.status === 'pending'
+      ? `<button type="button" class="primary proposal-accept-btn" data-proposal-id="${escapeHtml(proposal.id)}">${t('approve')}</button><button type="button" class="proposal-reject-btn" data-proposal-id="${escapeHtml(proposal.id)}">${t('reject')}</button>`
+      : '';
+    return `<div class="tp-card"><b>${escapeHtml(proposal.title)}</b> · ${escapeHtml(proposal.subject)}<div class="muted-note">${t('classLabel')}: ${escapeHtml(cls.name)} · ${escapeHtml(status)} · ${role === 'teacher' ? `${t('parentLabel')}: ${escapeHtml(proposal.parentUsername)}` : `${t('teacherLabel')}: ${escapeHtml(cls.teacherUsername)}`}</div>${action}</div>`;
+  }).join('');
 }
 
 function getTeacherFilteredResults() {
@@ -2767,23 +3197,25 @@ function renderTeacherStats(){
   const kpiWrap = document.getElementById('teacherKpis');
   if (!kpiWrap) return;
   const user = getCurrentUser();
-  const classes = getClasses().filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase());
+  const classes = currentUserRole() === 'parent'
+    ? getClasses().filter(c => getMembers().some(m => m.classId === c.id && m.username.toLowerCase() === (user || '').toLowerCase()))
+    : getClasses().filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase());
   const memberCount = getMembers().filter(m => classes.some(c => c.id === m.classId)).length;
   const tests = getClassTests().filter(t => classes.some(c => c.id === t.classId));
   const results = getTeacherFilteredResults();
   const avgPct = results.length ? Math.round(results.reduce((sum, item) => sum + (Number(item.pct) || 0), 0) / results.length) : 0;
   const topClass = classes.map(c => ({ name: c.name, avg: results.filter(r => r.classId === c.id).length ? Math.round(results.filter(r => r.classId === c.id).reduce((sum, item) => sum + (Number(item.pct) || 0), 0) / results.filter(r => r.classId === c.id).length) : 0 })).sort((a,b)=>b.avg-a.avg)[0];
   kpiWrap.innerHTML = `
-    <div class="teacher-kpi"><div class="kpi-label">Sinflar</div><div class="kpi-value">${classes.length}</div></div>
-    <div class="teacher-kpi"><div class="kpi-label">O'quvchilar</div><div class="kpi-value">${memberCount}</div></div>
-    <div class="teacher-kpi"><div class="kpi-label">Testlar</div><div class="kpi-value">${tests.length}</div></div>
+    <div class="teacher-kpi"><div class="kpi-label">${t('statsClasses')}</div><div class="kpi-value">${classes.length}</div></div>
+    <div class="teacher-kpi"><div class="kpi-label">${t('statsStudents')}</div><div class="kpi-value">${memberCount}</div></div>
+    <div class="teacher-kpi"><div class="kpi-label">${t('statsTests')}</div><div class="kpi-value">${tests.length}</div></div>
     <div class="teacher-kpi"><div class="kpi-label">Avg %</div><div class="kpi-value">${avgPct}%</div></div>
   `;
   const summaryList = document.getElementById('teacherSummaryList');
   if (summaryList) {
     summaryList.innerHTML = `
-      <div class="teacher-summary-item"><span>Eng yaxshi sinf</span><span class="mini">${topClass ? `${escapeHtml(topClass.name)} · ${topClass.avg}%` : 'Mavjud emas'}</span></div>
-      <div class="teacher-summary-item"><span>Umumiy natija</span><span class="mini">${results.length ? `${avgPct}% o'rtacha` : 'Natija yo\'q'}</span></div>
+      <div class="teacher-summary-item"><span>${t('bestClass')}</span><span class="mini">${topClass ? `${escapeHtml(topClass.name)} · ${topClass.avg}%` : t('noData')}</span></div>
+      <div class="teacher-summary-item"><span>${t('overallResult')}</span><span class="mini">${results.length ? `${avgPct}% ${t('average')}` : t('noResults')}</span></div>
     `;
   }
   const chart = document.getElementById('teacherChart');
@@ -2815,7 +3247,7 @@ function renderTeacherInsights(){
   if (!container) return;
   const rows = getTeacherFilteredResults();
   if (!rows.length) {
-    container.innerHTML = '<div class="muted-note">Natija mavjud emas.</div>';
+    container.innerHTML = `<div class="muted-note">${t('noResultDetail')}</div>`;
     return;
   }
   const grouped = {};
@@ -2942,18 +3374,28 @@ function joinClassByCode(code, childUser){
   const user = getCurrentUser();
   if (!user) { openAuthModal({ tab:'login' }); showFxToast(t('needLogin'), 'var(--gold)'); return; }
   code = (code||'').trim().toUpperCase();
+  childUser = (childUser || '').trim();
   const cls = getClasses().find(c => c.code === code);
   if (!cls) { showFxToast(t('joinFail'), 'var(--warn)'); return; }
+  if (childUser) {
+    const child = getUserRecord(childUser);
+    if (!child || child.username.toLowerCase() === user.toLowerCase()) {
+      showFxToast(t('childNotFound'), 'var(--warn)');
+      return;
+    }
+  }
   const members = getMembers();
   const role = currentUserRole() === 'parent' || childUser ? 'parent' : 'student';
   const exists = members.find(m => m.classId === cls.id && m.username.toLowerCase() === user.toLowerCase());
   if (exists) {
     exists.role = role;
-    if (childUser) exists.childUsername = childUser.trim();
+    if (childUser) exists.childUsername = childUser;
   } else {
-    members.push({ classId: cls.id, username: user, role, childUsername: (childUser||'').trim() });
+    members.push({ classId: cls.id, username: user, role, childUsername: childUser });
   }
   writeStore(MEMBER_KEY, members);
+  const joinMessage = document.getElementById('tpJoinMsg');
+  if (joinMessage) joinMessage.textContent = childUser ? t('joinParentOk') : t('joinStudentOk');
   showFxToast(t('joinOk'), 'var(--p2)');
   renderTeacherPanel();
   renderClassTestsMini();
@@ -2974,15 +3416,24 @@ function createClass(){
 function saveClassTest(){
   const user = getCurrentUser();
   if (!user) { openAuthModal({}); return; }
-  if (currentUserRole() !== 'teacher') setUserRole('teacher');
+  const role = currentUserRole();
   const classId = document.getElementById('testClassSelect').value;
   const title = document.getElementById('testTitleInput').value.trim();
   const qs = collectTestQuestions();
   if (!classId || !title || !qs.length) { showFxToast(t('needQuestions'), 'var(--warn)'); return; }
+  const cls = getClasses().find(c => c.id === classId);
+  if (!cls || (role !== 'teacher' && role !== 'parent')) {
+    showFxToast('Bu amal uchun ruxsat yo\'q.', 'var(--warn)');
+    return;
+  }
+  if (role === 'parent' && !getMembers().some(m => m.classId === classId && m.username.toLowerCase() === user.toLowerCase())) {
+    showFxToast(t('joinChildFirst'), 'var(--warn)');
+    return;
+  }
   const tests = getClassTests();
   const startInput = document.getElementById('testScheduleStart');
   const endInput = document.getElementById('testScheduleEnd');
-  tests.push({
+  const test = {
     id:'t'+Date.now(),
     classId,
     title,
@@ -2992,13 +3443,41 @@ function saveClassTest(){
     createdAt: Date.now(),
     start: startInput ? startInput.value : '',
     end: endInput ? endInput.value : ''
-  });
-  writeStore(TEST_KEY, tests);
-  showFxToast(t('testSaved'), 'var(--p2)');
+  };
+  if (role === 'parent') {
+    const proposals = getTestProposals();
+    proposals.push({ ...test, parentUsername: user, status: 'pending', proposedAt: Date.now() });
+    writeStore(PROPOSAL_KEY, proposals);
+    showFxToast(t('proposalSent'), 'var(--p2)');
+  } else {
+    test.teacherUsername = user;
+    tests.push(test);
+    writeStore(TEST_KEY, tests);
+    showFxToast(t('testSaved'), 'var(--p2)');
+  }
   document.getElementById('testTitleInput').value = '';
   document.getElementById('testQuestionsBox').innerHTML = '';
   fillTestQuestionEditors(2);
   renderTeacherPanel();
+}
+function updateTestProposal(id, status){
+  const user = getCurrentUser();
+  if (!user || currentUserRole() !== 'teacher') return;
+  const proposals = getTestProposals();
+  const proposal = proposals.find(item => item.id === id);
+  if (!proposal) return;
+  const cls = getClasses().find(item => item.id === proposal.classId);
+  if (!cls || cls.teacherUsername.toLowerCase() !== user.toLowerCase()) return;
+  proposal.status = status;
+  proposal.reviewedAt = Date.now();
+  if (status === 'accepted') {
+    const tests = getClassTests();
+    tests.push({ ...proposal, teacherUsername: user, approvedAt: Date.now() });
+    writeStore(TEST_KEY, tests);
+  }
+  writeStore(PROPOSAL_KEY, proposals);
+  renderTeacherPanel();
+  showFxToast(status === 'accepted' ? t('proposalApproved') : t('proposalRejected'), status === 'accepted' ? 'var(--p2)' : 'var(--warn)');
 }
 function myJoinedClasses(){
   const user = getCurrentUser();
@@ -3013,12 +3492,12 @@ function renderClassTestsMini(){
   if (!box) return;
   const joined = myJoinedClasses();
   if (mini) {
-    mini.innerHTML = joined.map(c => `<div class="muted-note" style="margin-top:8px;">${escapeHtml(c.name)} · <b class="tp-code" style="font-size:14px;">${c.code}</b></div>`).join('');
+    mini.innerHTML = joined.map(c => `<div class="muted-note" style="margin-top:8px;">${escapeHtml(c.name)} · <b class="tp-code" style="font-size:14px;">${escapeHtml(c.code)}</b></div>`).join('');
   }
   const tests = getClassTests().filter(x => joined.some(c => c.id === x.classId));
   if (!tests.length) { box.innerHTML = ''; return; }
   box.innerHTML = `<p class="section-label" style="margin-top:14px;">${t('assignedTests')}</p>` + tests.map(x =>
-    `<button type="button" class="radio-btn" style="margin:6px 6px 0 0;" onclick="startAssignedTest('${x.id}')">${escapeHtml(x.title)} (${x.questions.length})</button>`
+    `<button type="button" class="radio-btn assigned-test-btn" data-test-id="${escapeHtml(x.id)}" style="margin:6px 6px 0 0;">${escapeHtml(x.title)} (${x.questions.length})</button>`
   ).join('');
 }
 function startAssignedTest(id){
@@ -3055,9 +3534,12 @@ function saveAssignedResult(){
   renderClassResultsTable();
 }
 
-function isSoloLike(){ return gameMode==='solo' || gameMode==='survival' || gameMode==='exam'; }
+function isSoloLike(){ return gameMode==='solo' || gameMode==='survival' || gameMode==='exam' || gameMode==='chain' || gameMode==='speed'; }
 function isBlitz(){ return gameMode==='blitz'; }
 function isSudden(){ return gameMode==='sudden'; }
+function isChain(){ return gameMode==='chain'; }
+function isSpeed(){ return gameMode==='speed'; }
+function isHandicap(){ return gameMode==='handicap'; }
 function usesBot(){
   if (gameMode==='bot') return true;
   if ((gameMode==='blitz' || gameMode==='sudden') && versusType==='bot') return true;
@@ -3102,6 +3584,48 @@ function startBot() { gameMode = 'bot'; }
 // --- Login/Chiqish tugmalari va reyting modal tugmalari (sahifa ochilganda darhol ulanadi) ---
 document.getElementById('openAuthBtn')?.addEventListener('click', () => {
   openAuthModal({ forced: false });
+});
+
+document.querySelectorAll('.tp-tab').forEach(button => {
+  button.addEventListener('click', () => switchTpTab(button.dataset.tp));
+});
+
+document.getElementById('testProposalsList')?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-proposal-id]');
+  if (!button) return;
+  updateTestProposal(button.dataset.proposalId, button.classList.contains('proposal-accept-btn') ? 'accepted' : 'rejected');
+});
+
+document.getElementById('testQuestionsBox')?.addEventListener('click', (event) => {
+  const removeButton = event.target.closest('.q-remove');
+  if (!removeButton) return;
+  const editors = document.querySelectorAll('#testQuestionsBox .q-editor');
+  if (editors.length <= 1) {
+    showFxToast(t('keepQuestion'), 'var(--warn)');
+    return;
+  }
+  removeButton.closest('.q-editor')?.remove();
+  document.querySelectorAll('#testQuestionsBox .q-editor').forEach((editor, index) => {
+    editor.querySelector('.q-number').textContent = String(index + 1).padStart(2, '0');
+    editor.querySelector('.q-editor-title').textContent = `${t('qLabel')} ${index + 1}`;
+  });
+  updateQuestionCount();
+});
+
+document.getElementById('teacherClassesList')?.addEventListener('click', async (event) => {
+  const button = event.target.closest('.copy-class-code');
+  if (!button) return;
+  try {
+    await navigator.clipboard.writeText(button.dataset.code || '');
+    showFxToast(t('copyCode'), 'var(--p2)');
+  } catch (error) {
+    showFxToast(t('copyCode'), 'var(--warn)');
+  }
+});
+
+document.getElementById('classTestsBox')?.addEventListener('click', (event) => {
+  const button = event.target.closest('.assigned-test-btn');
+  if (button) startAssignedTest(button.dataset.testId);
 });
 
 document.getElementById('teacherBtn')?.addEventListener('click', () => {
@@ -7922,7 +8446,8 @@ function buildSubjectGrid(g) {
   subjects.forEach(subj => {
     const chip = document.createElement('div');
     chip.className = 'grade-chip';
-    chip.textContent = subj;
+    chip.dataset.subject = subj;
+    chip.textContent = subjectLabel(subj);
     chip.addEventListener('click', ()=>{
       grid.querySelectorAll('.grade-chip').forEach(c=>c.classList.remove('active'));
       chip.classList.add('active');
@@ -8053,7 +8578,7 @@ function refreshSetupUI() {
   const labels = {
     pvp: t('startDuel'), bot: t('startDuel'), solo: t('startPractice'),
     blitz: t('startBlitz'), survival: t('startSurvival'),
-    sudden: t('startSudden'), exam: t('startExam')
+    sudden: t('startSudden'), exam: t('startExam'), chain: t('startChain'), speed: t('startSpeed'), handicap: t('startHandicap')
   };
   if (startBtn) startBtn.textContent = labels[gameMode] || t('startBtn');
 }
@@ -8098,6 +8623,22 @@ function shuffle(arr){
     [arr[i],arr[j]] = [arr[j],arr[i]];
   }
   return arr;
+}
+
+function questionDifficulty(question){
+  const textScore = String(question.q || '').length;
+  const optionScore = (question.o || []).reduce((sum, option) => sum + String(option).length, 0);
+  return textScore + optionScore;
+}
+function takeNextQuestion(){
+  if (!isChain()) return currentPool.pop();
+  const ordered = currentPool.slice().sort((a, b) => questionDifficulty(a) - questionDifficulty(b));
+  const progress = Math.min(0.98, round / Math.max(1, TOTAL_ROUNDS - 1));
+  const index = Math.min(ordered.length - 1, Math.floor(progress * ordered.length));
+  const question = ordered[index];
+  const poolIndex = currentPool.indexOf(question);
+  if (poolIndex >= 0) currentPool.splice(poolIndex, 1);
+  return question;
 }
 
 function buildGamePool() {
@@ -8164,6 +8705,7 @@ function beginMatch(fromReplay){
   subjectStats = {};
   lives = MAX_LIVES;
   survivalStreak = 0;
+  speedTimeLeft = SPEED_TOTAL_TIME;
   isExtraRoundMode = false;
   skipStartCountdown = fromReplay && gameMode === 'exam' && examRetrying;
 
@@ -8179,8 +8721,8 @@ function beginMatch(fromReplay){
   currentPlayer = 1;
 
   const kick = () => nextQuestion();
-  if (!fromReplay && (gameMode==='blitz' || gameMode==='sudden' || gameMode==='exam' || gameMode==='survival')) {
-    const titles = { blitz:'BLITS', sudden:"TO'SATDAN O'LIM", exam:'IMTIHON', survival:'OMON QOLISH' };
+  if (!fromReplay && (gameMode==='blitz' || gameMode==='sudden' || gameMode==='exam' || gameMode==='survival' || gameMode==='chain' || gameMode==='speed' || gameMode==='handicap')) {
+    const titles = { blitz:'BLITS', sudden:"TO'SATDAN O'LIM", exam:'IMTIHON', survival:'OMON QOLISH', chain:'ZANJIR', speed:'SPEED-RUN', handicap:'HANDIKAP' };
     runCountdown(titles[gameMode], kick);
   } else {
     kick();
@@ -8188,7 +8730,8 @@ function beginMatch(fromReplay){
 }
 
 function getModeRounds(poolLen){
-  if (gameMode === 'solo') return Math.max(1, poolLen);
+  if (gameMode === 'solo' || gameMode === 'chain') return Math.max(1, poolLen);
+  if (gameMode === 'speed') return 9999;
   if (gameMode === 'exam' && activeClassTest) return Math.max(1, poolLen);
   if (gameMode === 'survival' || gameMode === 'sudden') return 99;
   return 10;
@@ -8254,7 +8797,7 @@ function buildTrack(){
     return;
   }
   track.style.display = 'flex';
-  const n = Math.min(TOTAL_ROUNDS, 25);
+  const n = Math.min(TOTAL_ROUNDS, isSpeed() ? 25 : 25);
   for(let i=0; i<n; i++){
     const node = document.createElement('div');
     node.className = 'node';
@@ -8270,7 +8813,7 @@ function nextQuestion(){
 
   if (gameMode === 'survival' && lives <= 0) { finishGame(); return; }
 
-  if(round >= TOTAL_ROUNDS){
+  if(!isSpeed() && round >= TOTAL_ROUNDS){
     const canExtra = isDuelLike() && !isSudden() && p1.score === p2.score;
     if(canExtra) {
       isExtraRoundMode = true; TOTAL_ROUNDS += 2;
@@ -8286,11 +8829,11 @@ function nextQuestion(){
     }
   }
 
-  let rawQ = currentPool.pop();
+  let rawQ = takeNextQuestion();
   if(!rawQ) {
     if (poolForRefill.length > 0) {
       currentPool = shuffle(JSON.parse(JSON.stringify(poolForRefill)));
-      rawQ = currentPool.pop();
+      rawQ = takeNextQuestion();
     } else {
       rawQ = getBackupQuestion();
     }
@@ -8302,7 +8845,7 @@ function nextQuestion(){
   currentSubjectName = rawQ.s;
   currentOptions = shuffle([...(rawQ.o || [])]);
   document.getElementById('qText').textContent = rawQ.q;
-  document.getElementById('subjectTag').textContent = rawQ.s;
+  document.getElementById('subjectTag').textContent = subjectLabel(rawQ.s);
   document.getElementById('explainBox').style.display = 'none';
   const qCard = document.getElementById('questionCard');
   if (qCard) { qCard.classList.remove('q-enter'); void qCard.offsetWidth; qCard.classList.add('q-enter'); }
@@ -8313,6 +8856,9 @@ function nextQuestion(){
   } else if(isExtraRoundMode) {
     document.getElementById('roundLbl').textContent = t('extraRound');
     document.getElementById('roundLbl').style.color = 'var(--warn)';
+  } else if (isSpeed()) {
+    document.getElementById('roundLbl').textContent = t('speedProgress', { n: speedTimeLeft });
+    document.getElementById('roundLbl').style.color = 'var(--p2)';
   } else if (gameMode === 'sudden') {
     document.getElementById('roundLbl').textContent = t('roundN', { n: round+1 });
     document.getElementById('roundLbl').style.color = 'var(--warn)';
@@ -8482,7 +9028,7 @@ function settleBlitz(){
 
   const explainBox = document.getElementById('explainBox');
   if (winner===0 && currentExplanation) {
-    explainBox.innerHTML = `<b>To'g'ri javob: ${currentAnswer}.</b><br>Chunki ${currentExplanation}`;
+    explainBox.innerHTML = `<b>To'g'ri javob: ${escapeHtml(currentAnswer)}.</b><br>Chunki ${escapeHtml(currentExplanation)}`;
     explainBox.style.display = 'block';
   } else explainBox.style.display = 'none';
 
@@ -8501,7 +9047,12 @@ function settleBlitz(){
 }
 
 function startTimer(){
-  timeLeft = TIME_LIMIT;
+  const handicapLimit = isHandicap()
+    ? (p1.score === p2.score ? TIME_LIMIT : ((currentPlayer === 1 && p1.score > p2.score) || (currentPlayer === 2 && p2.score > p1.score) ? Math.max(7, TIME_LIMIT - 5) : TIME_LIMIT))
+    : TIME_LIMIT;
+  const roundLimit = isSpeed() ? SPEED_TOTAL_TIME : handicapLimit;
+  if (isSpeed() && speedTimeLeft <= 0) { finishGame(); return; }
+  timeLeft = isSpeed() ? speedTimeLeft : roundLimit;
   const fill = document.getElementById('timerFill');
   fill.style.transition = 'none'; fill.style.width = '100%';
   fill.style.background = 'var(--p2)';
@@ -8510,13 +9061,16 @@ function startTimer(){
   timer = setInterval(()=>{
     if (isPaused) return;
     timeLeft--;
-    const pct = Math.max(0,(timeLeft/TIME_LIMIT)*100);
+    if (isSpeed()) speedTimeLeft = timeLeft;
+    const pct = Math.max(0,(timeLeft/roundLimit)*100);
     fill.style.width = pct + '%';
     if(timeLeft <= 5) { fill.style.background = 'var(--warn)'; fill.classList.add('urgent'); playSound('tick'); }
     else { fill.classList.remove('urgent'); }
     if(timeLeft <= 0){
       clearInterval(timer);
-      if (isBlitz()) {
+      if (isSpeed()) {
+        finishGame();
+      } else if (isBlitz()) {
         if (!blitzState.resolved) settleBlitz();
       } else {
         lockOptions(null); settleRound(false);
@@ -8582,6 +9136,7 @@ function settleRound(correct){
     playSound('correct'); activePlayer.correct++; activePlayer.combo++;
     if(activePlayer.combo > activePlayer.maxCombo) activePlayer.maxCombo = activePlayer.combo;
     let bonus = activePlayer.combo > 1 ? (activePlayer.combo - 1) * 2 : 0;
+    if (isChain()) bonus += round * 2;
     activePlayer.score += 10 + bonus;
     if(node) node.classList.add('p' + (isSoloLike() ? 1 : currentPlayer));
     if (gameMode === 'survival') {
@@ -8612,7 +9167,7 @@ function settleRound(correct){
 
   const explainBox = document.getElementById('explainBox');
   if(!correct && currentExplanation) {
-    explainBox.innerHTML = `<b>To'g'ri javob: ${currentAnswer}.</b><br>Chunki ${currentExplanation}`;
+    explainBox.innerHTML = `<b>To'g'ri javob: ${escapeHtml(currentAnswer)}.</b><br>Chunki ${escapeHtml(currentExplanation)}`;
     explainBox.style.display = 'block';
   } else {
     explainBox.style.display = 'none';
@@ -8638,6 +9193,10 @@ function settleRound(correct){
     return;
   }
   if (gameMode === 'sudden' && !correct) {
+    scheduleNext(false, true);
+    return;
+  }
+  if (isChain() && !correct) {
     scheduleNext(false, true);
     return;
   }
@@ -8875,6 +9434,10 @@ function finishGame(){
     if(p1.score === p2.score){ title.innerHTML = "Blits durrang! ⚡"; }
     else if(p1.score > p2.score){ title.innerHTML = `<span style="color:var(--p1);">${escapeHtml(p1.name)}</span> blitsda oldinda! ⚡`; }
     else { title.innerHTML = `<span style="color:var(--p2);">${escapeHtml(p2.name)}</span> blitsda oldinda! ⚡`; }
+  } else if (isChain()) {
+    title.innerHTML = `${t('chainResult')} <span style="color:var(--gold);">${p1.score}</span>`;
+  } else if (isSpeed()) {
+    title.innerHTML = `${t('speedResult')} <span style="color:var(--p2);">${p1.correct}</span>`;
   } else if(gameMode === 'solo') {
     title.innerHTML = `Mashq yakunlandi! 📚 <span style="color:var(--gold);">${p1Acc}%</span> to'g'ri`;
   } else if(p1.score === p2.score){ title.innerHTML = "Durrang!"; }
@@ -9004,12 +9567,22 @@ function openPauseMenu(){
   if (isPaused) return;
   isPaused = true;
   document.getElementById('game').classList.add('paused');
-  document.getElementById('pauseOverlay').classList.add('open');
+  const overlay = document.getElementById('pauseOverlay');
+  overlay.classList.add('open');
+  overlay.style.display = 'flex';
+  overlay.style.visibility = 'visible';
+  overlay.style.opacity = '1';
+  overlay.setAttribute('aria-hidden', 'false');
 }
 function closePauseMenu(){
   isPaused = false;
   document.getElementById('game').classList.remove('paused');
-  document.getElementById('pauseOverlay').classList.remove('open');
+  const overlay = document.getElementById('pauseOverlay');
+  overlay.classList.remove('open');
+  overlay.style.display = '';
+  overlay.style.visibility = '';
+  overlay.style.opacity = '';
+  overlay.setAttribute('aria-hidden', 'true');
 }
 
 document.getElementById('pauseBtn').addEventListener('click', openPauseMenu);
@@ -9102,13 +9675,6 @@ function renderLeaderboard() {
   container.innerHTML = html;
 }
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>"']/g, function(m) {
-    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-  });
-}
-
 // --- AUTHENTICATION (LOCALSTORAGE) ---
 const USERS_KEY = 'bilimDueliUsers';
 const CURRENT_USER_KEY = 'bilimDueliCurrentUser';
@@ -9138,11 +9704,11 @@ function fillDateSelects() {
     const d = document.getElementById(dId);
     const y = document.getElementById(yId);
     if (d && d.options.length < 2) {
-      d.innerHTML = '<option value="">Kun</option>' + Array.from({length:31}, (_,i) => `<option value="${i+1}">${i+1}</option>`).join('');
+      d.innerHTML = `<option value="">${t('day')}</option>` + Array.from({length:31}, (_,i) => `<option value="${i+1}">${i+1}</option>`).join('');
     }
     if (y && y.options.length < 2) {
       const now = new Date().getFullYear();
-      let html = '<option value="">Yil</option>';
+      let html = `<option value="">${t('year')}</option>`;
       for (let yr = now - 8; yr >= 1955; yr--) html += `<option value="${yr}">${yr}</option>`;
       y.innerHTML = html;
     }
@@ -9150,6 +9716,12 @@ function fillDateSelects() {
 }
 function saveUsers(users) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+async function hashPassword(password) {
+  if (!window.crypto?.subtle) throw new Error('Secure password hashing is unavailable');
+  const bytes = new TextEncoder().encode(password);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 function getUserRecord(username) {
   if (!username) return null;
@@ -9186,7 +9758,7 @@ function switchAuthTab(tab) {
     loginTabBtn.classList.add('active');
     regTabBtn.classList.remove('active');
     indicator.classList.remove('reg');
-    if (subtitle) subtitle.textContent = 'Davom etish uchun kiring yoki ro\'yxatdan o\'ting';
+    if (subtitle) subtitle.textContent = t('authSubtitle');
   } else {
     loginForm.style.display = 'none';
     regForm.style.display = 'block';
@@ -9194,7 +9766,7 @@ function switchAuthTab(tab) {
     regTabBtn.classList.add('active');
     loginTabBtn.classList.remove('active');
     indicator.classList.add('reg');
-    if (subtitle) subtitle.textContent = 'Ism, hudud va bio bilan to\'liq hisob yarating';
+    if (subtitle) subtitle.textContent = t('authSubtitleReg');
   }
 }
 
@@ -9206,7 +9778,7 @@ function showAuthError(msg) {
   err.classList.add('shake');
 }
 
-function handleRegister(e) {
+async function handleRegister(e) {
   e.preventDefault();
   const firstName = document.getElementById('regFirstName').value.trim();
   const lastName = document.getElementById('regLastName').value.trim();
@@ -9228,8 +9800,13 @@ function handleRegister(e) {
     return;
   }
 
+  let passwordHash;
+  try { passwordHash = await hashPassword(password); } catch (error) {
+    showAuthError("Xavfsiz parol saqlash mavjud emas. HTTPS orqali qayta urinib ko'ring.");
+    return;
+  }
   users.push({
-    username, password, firstName, lastName,
+    username, passwordHash, firstName, lastName,
     role: document.getElementById('regRole')?.value || 'student'
   });
   saveUsers(users);
@@ -9238,25 +9815,35 @@ function handleRegister(e) {
   closeAuthModal();
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
   const username = document.getElementById('loginUsername').value.trim();
   const password = document.getElementById('loginPassword').value;
 
   let users = getUsers();
-  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+  let passwordHash;
+  try { passwordHash = await hashPassword(password); } catch (error) {
+    showAuthError("Xavfsiz parol tekshiruvi mavjud emas. HTTPS orqali qayta urinib ko'ring.");
+    return;
+  }
+  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && (u.passwordHash === passwordHash || u.password === password));
 
   if (!user) {
     showAuthError("Username yoki parol noto'g'ri!");
     return;
   }
 
+  if (!user.passwordHash) {
+    user.passwordHash = passwordHash;
+    delete user.password;
+    saveUsers(users);
+  }
   localStorage.setItem(CURRENT_USER_KEY, user.username);
   updateUserUI();
   closeAuthModal();
 }
 
-function handleProfileSave(e) {
+async function handleProfileSave(e) {
   e.preventDefault();
   const currentName = getCurrentUser();
   if (!currentName) return;
@@ -9299,7 +9886,13 @@ function handleProfileSave(e) {
     return;
   }
   if (newPass) {
-    if (!oldPass || oldPass !== rec.password) {
+    let oldPasswordHash;
+    try { oldPasswordHash = await hashPassword(oldPass); } catch (error) {
+      msg.textContent = "Xavfsiz parol tekshiruvi mavjud emas. HTTPS orqali qayta urinib ko'ring.";
+      msg.classList.add('err');
+      return;
+    }
+    if (!oldPass || (rec.passwordHash !== oldPasswordHash && rec.password !== oldPass)) {
       msg.textContent = "Joriy parol noto'g'ri.";
       msg.classList.add('err');
       return;
@@ -9309,7 +9902,12 @@ function handleProfileSave(e) {
       msg.classList.add('err');
       return;
     }
-    rec.password = newPass;
+    try { rec.passwordHash = await hashPassword(newPass); } catch (error) {
+      msg.textContent = 'Xavfsiz parol saqlanmadi.';
+      msg.classList.add('err');
+      return;
+    }
+    delete rec.password;
   }
 
   const oldKey = rec.username.toLowerCase();
@@ -9399,6 +9997,7 @@ function updateUserUI() {
 document.addEventListener('DOMContentLoaded', () => {
   fillDateSelects();
   fillRegionSelect(document.getElementById('profRegion'), "O'zbekiston");
+  applyLang();
   document.getElementById('profCountry')?.addEventListener('change', (e) => {
     fillRegionSelect(document.getElementById('profRegion'), e.target.value);
   });
@@ -9439,6 +10038,7 @@ function applyDeepLinkFromURL() {
 const fxCanvas = document.getElementById('fxCanvas');
 const fxCtx = fxCanvas ? fxCanvas.getContext('2d') : null;
 let fxParts = [];
+let fxFrame = null;
 function resizeFx(){
   if (!fxCanvas) return;
   fxCanvas.width = innerWidth;
@@ -9456,9 +10056,11 @@ function spawnBurst(x, y, color, n=28){
       life: 1, size: 3+Math.random()*5, color, g: 0.12+Math.random()*0.08
     });
   }
+  if (fxCtx && !fxFrame) fxFrame = requestAnimationFrame(fxLoop);
 }
 function fxLoop(){
-  if (!fxCtx) return;
+  fxFrame = null;
+  if (!fxCtx || !fxParts.length) return;
   fxCtx.clearRect(0,0,fxCanvas.width, fxCanvas.height);
   fxParts = fxParts.filter(p => p.life > 0);
   fxParts.forEach(p=>{
@@ -9470,9 +10072,8 @@ function fxLoop(){
     fxCtx.fill();
   });
   fxCtx.globalAlpha = 1;
-  requestAnimationFrame(fxLoop);
+  fxFrame = requestAnimationFrame(fxLoop);
 }
-fxLoop();
 
 function showFxToast(text, color){
   const el = document.getElementById('fxToast');
