@@ -2116,28 +2116,6 @@
           <label data-i18n="labelLastName">Familyangiz</label>
           <input type="text" id="regLastName" required autocomplete="family-name" placeholder="Masalan: Karimov">
         </div>
-        <div class="auth-field span-2">
-          <label>Tug'ilgan kuningiz</label>
-          <div class="auth-date-row">
-            <select id="regBirthDay" required></select>
-            <select id="regBirthMonth" required>
-              <option value="">Oy</option>
-              <option value="1">Yanvar</option>
-              <option value="2">Fevral</option>
-              <option value="3">Mart</option>
-              <option value="4">Aprel</option>
-              <option value="5">May</option>
-              <option value="6">Iyun</option>
-              <option value="7">Iyul</option>
-              <option value="8">Avgust</option>
-              <option value="9">Sentabr</option>
-              <option value="10">Oktabr</option>
-              <option value="11">Noyabr</option>
-              <option value="12">Dekabr</option>
-            </select>
-            <select id="regBirthYear" required></select>
-          </div>
-        </div>
         <div class="auth-field">
           <label data-i18n="labelRole">Rol</label>
           <select id="regRole" required>
@@ -2153,31 +2131,6 @@
         <div class="auth-field">
           <label>Parol yarating</label>
           <input type="password" id="regPassword" required autocomplete="new-password" minlength="4" placeholder="Kamida 4 belgi">
-        </div>
-        <div class="auth-field">
-          <label>Davlat</label>
-          <select id="regCountry" required>
-            <option value="O'zbekiston">O'zbekiston</option>
-            <option value="Qozog'iston">Qozog'iston</option>
-            <option value="Qirg'iziston">Qirg'iziston</option>
-            <option value="Tojikiston">Tojikiston</option>
-            <option value="Turkmaniston">Turkmaniston</option>
-            <option value="Rossiya">Rossiya</option>
-            <option value="Turkiya">Turkiya</option>
-            <option value="Boshqa">Boshqa</option>
-          </select>
-        </div>
-        <div class="auth-field">
-          <label>Viloyat / hudud</label>
-          <select id="regRegion" required></select>
-        </div>
-        <div class="auth-field span-2">
-          <label>Qayerda yashaysiz?</label>
-          <input type="text" id="regCity" required placeholder="Shahar, tuman yoki mahalla">
-        </div>
-        <div class="auth-field span-2">
-          <label>Bio — o'zingiz haqingizda</label>
-          <textarea id="regBio" maxlength="280" placeholder="Qisqacha: kimligingiz, nimalarni yoqtirasiz..."></textarea>
         </div>
       </div>
       <button type="submit" class="auth-submit" data-i18n="tabRegister">Ro'yxatdan o'tish</button>
@@ -9179,7 +9132,6 @@ function fillRegionSelect(sel, country, selected) {
 }
 function fillDateSelects() {
   const pairs = [
-    ['regBirthDay','regBirthYear'],
     ['profBirthDay','profBirthYear']
   ];
   pairs.forEach(([dId, yId]) => {
@@ -9226,7 +9178,6 @@ function switchAuthTab(tab) {
   err.textContent = '';
   err.classList.remove('shake');
   fillDateSelects();
-  fillRegionSelect(document.getElementById('regRegion'), document.getElementById('regCountry')?.value || "O'zbekiston");
 
   if (tab === 'login') {
     loginForm.style.display = 'block';
@@ -9259,18 +9210,11 @@ function handleRegister(e) {
   e.preventDefault();
   const firstName = document.getElementById('regFirstName').value.trim();
   const lastName = document.getElementById('regLastName').value.trim();
-  const birthDay = document.getElementById('regBirthDay').value;
-  const birthMonth = document.getElementById('regBirthMonth').value;
-  const birthYear = document.getElementById('regBirthYear').value;
   const username = document.getElementById('regUsername').value.trim();
   const password = document.getElementById('regPassword').value;
-  const country = document.getElementById('regCountry').value;
-  const region = document.getElementById('regRegion').value;
-  const city = document.getElementById('regCity').value.trim();
-  const bio = document.getElementById('regBio').value.trim();
 
-  if (!firstName || !lastName || !birthDay || !birthMonth || !birthYear || !username || !password || !country || !region || !city) {
-    showAuthError("Barcha asosiy maydonlarni to'ldiring!");
+  if (!firstName || !lastName || !username || !password) {
+    showAuthError("Ism, username va parolni to'ldiring!");
     return;
   }
   if (username.length < 3) {
@@ -9286,8 +9230,6 @@ function handleRegister(e) {
 
   users.push({
     username, password, firstName, lastName,
-    birthDay, birthMonth, birthYear,
-    country, region, city, bio,
     role: document.getElementById('regRole')?.value || 'student'
   });
   saveUsers(users);
@@ -9456,11 +9398,7 @@ function updateUserUI() {
 // Sahifa yuklanganda avval kirgan/ro'yxatdan o'tgan foydalanuvchini eslab qolish uchun
 document.addEventListener('DOMContentLoaded', () => {
   fillDateSelects();
-  fillRegionSelect(document.getElementById('regRegion'), "O'zbekiston");
   fillRegionSelect(document.getElementById('profRegion'), "O'zbekiston");
-  document.getElementById('regCountry')?.addEventListener('change', (e) => {
-    fillRegionSelect(document.getElementById('regRegion'), e.target.value);
-  });
   document.getElementById('profCountry')?.addEventListener('change', (e) => {
     fillRegionSelect(document.getElementById('profRegion'), e.target.value);
   });
