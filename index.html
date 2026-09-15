@@ -1692,6 +1692,67 @@
     font-family:'Space Grotesk',sans-serif; letter-spacing:2px; font-weight:800;
     color:var(--gold); font-size:20px;
   }
+  .teacher-kpis{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:16px 0;
+  }
+  .teacher-kpi{
+    background:linear-gradient(135deg, rgba(33,230,193,0.08), rgba(255,122,61,0.08));
+    border:1px solid var(--line-strong); border-radius:14px; padding:14px; position:relative; overflow:hidden;
+    animation: fadeUp .4s ease both;
+  }
+  .teacher-kpi::before{
+    content:''; position:absolute; inset:0 auto auto 0; width:100%; height:3px;
+    background:linear-gradient(90deg, var(--p2), var(--gold), var(--p1));
+  }
+  .teacher-kpi .kpi-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--chalk-dim); }
+  .teacher-kpi .kpi-value{ margin-top:8px; font-family:var(--font-poster); font-size:30px; color:var(--chalk); letter-spacing:1px; }
+  .teacher-chart-wrap{
+    background:var(--panel2); border:1px solid var(--line); border-radius:14px; padding:14px; margin:14px 0 18px;
+  }
+  .teacher-chart-head{ display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--chalk-dim); margin-bottom:10px; }
+  .teacher-chart{ display:flex; align-items:flex-end; gap:10px; min-height:170px; padding-top:14px; }
+  .teacher-bar-col{ flex:1; min-width:52px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .teacher-bar-track{ width:100%; height:120px; background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:10px 10px 6px 6px; display:flex; align-items:flex-end; padding:4px; }
+  .teacher-bar{ width:100%; background:linear-gradient(180deg, var(--p2), var(--gold)); border-radius:8px 8px 4px 4px; min-height:10px; position:relative; transition:height .5s ease; }
+  .teacher-bar-label{ font-size:11px; color:var(--chalk-dim); text-align:center; }
+  .teacher-bar-value{ font-size:11px; font-weight:700; color:var(--gold); }
+  .teacher-summary-list{ display:grid; gap:8px; }
+  .teacher-summary-item{
+    display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:10px;
+    background:var(--panel2); border:1px solid var(--line); color:var(--chalk);
+  }
+  .teacher-summary-item .mini{ color:var(--chalk-dim); font-size:12px; }
+  .teacher-export-row{
+    display:flex; justify-content:flex-end; gap:10px; margin:12px 0 18px; flex-wrap:wrap;
+  }
+  .export-btn{
+    background:transparent; border:1px solid var(--line-strong); color:var(--chalk); border-radius:10px; padding:9px 14px;
+    cursor:pointer; font-weight:600; transition:all .2s ease;
+  }
+  .export-btn:hover{ transform:translateY(-2px); border-color:var(--p2); color:var(--p2); }
+  .teacher-detail-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin:18px 0;
+  }
+  .teacher-student-card{
+    background:linear-gradient(135deg, rgba(33,230,193,0.07), rgba(255,122,61,0.05));
+    border:1px solid var(--line); border-radius:14px; padding:14px; position:relative; overflow:hidden;
+  }
+  .teacher-student-card::before{
+    content:''; position:absolute; inset:0 auto auto 0; height:3px; width:100%;
+    background:linear-gradient(90deg, var(--p2), var(--gold), var(--p1));
+  }
+  .teacher-student-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .teacher-student-name{ font-weight:700; }
+  .teacher-student-score{ font-family:var(--font-poster); font-size:26px; color:var(--gold); }
+  .teacher-progress{ margin:12px 0 8px; height:8px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; }
+  .teacher-progress-bar{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--p2), var(--gold)); }
+  .teacher-student-meta{ display:flex; justify-content:space-between; font-size:11px; color:var(--chalk-dim); }
+  .teacher-insight-badges{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .teacher-badge{
+    background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:999px; padding:4px 8px; font-size:11px; color:var(--chalk-dim);
+  }
+  .teacher-badge.warn{ color:var(--warn); border-color:rgba(255,77,94,.25); }
+  .teacher-badge.good{ color:var(--p2); border-color:rgba(33,230,193,.25); }
   .q-editor{
     border:1px dashed var(--line-strong); border-radius:12px; padding:12px; margin:10px 0;
   }
@@ -2181,6 +2242,16 @@
         <label data-i18n="testSubject">Fan</label>
         <input type="text" id="testSubjectInput" maxlength="40" placeholder="Matematika">
       </div>
+      <div class="tp-row" style="margin-top:0;">
+        <div class="tp-field" style="flex:1; min-width:180px; margin-bottom:0;">
+          <label>Faollashish vaqti</label>
+          <input type="datetime-local" id="testScheduleStart">
+        </div>
+        <div class="tp-field" style="flex:1; min-width:180px; margin-bottom:0;">
+          <label>Tugash vaqti</label>
+          <input type="datetime-local" id="testScheduleEnd">
+        </div>
+      </div>
       <div id="testQuestionsBox"></div>
       <div class="tp-row">
         <button type="button" id="addQuestionBtn" data-i18n="btnAddQuestion">+ Savol qo'shish</button>
@@ -2192,6 +2263,19 @@
         <select id="resultsClassSelect"></select>
         <select id="resultsTestSelect"></select>
       </div>
+      <div id="teacherKpis" class="teacher-kpis"></div>
+      <div class="teacher-chart-wrap">
+        <div class="teacher-chart-head">
+          <span>Sinf natijasi</span>
+          <span id="teacherChartLegend">Avg: 0%</span>
+        </div>
+        <div id="teacherChart" class="teacher-chart"></div>
+      </div>
+      <div id="teacherSummaryList" class="teacher-summary-list"></div>
+      <div class="teacher-export-row">
+        <button type="button" id="exportTeacherCsvBtn" class="export-btn">Export CSV</button>
+      </div>
+      <div id="teacherStudentsInsight" class="teacher-detail-grid"></div>
       <div id="resultsTableWrap"></div>
     </div>
     <div class="tp-pane" id="tpJoin">
@@ -2602,6 +2686,16 @@ function setUserRole(role){
 }
 
 function openTeacherPanel(){
+  const current = getCurrentUser();
+  if (!current) {
+    openAuthModal({ tab: 'login' });
+    showFxToast(t('needLogin'), 'var(--gold)');
+    return;
+  }
+  const role = currentUserRole();
+  if (role !== 'teacher' && role !== 'parent') {
+    setUserRole('teacher');
+  }
   document.getElementById('teacherOverlay').classList.add('open');
   const gradeSel = document.getElementById('newClassGrade');
   if (gradeSel && !gradeSel.options.length) {
@@ -2659,16 +2753,19 @@ function renderTeacherPanel(){
   const user = getCurrentUser();
   const role = currentUserRole();
   const classes = getClasses();
-  const mine = classes.filter(c => user && c.teacherUsername.toLowerCase() === user.toLowerCase());
+  const mine = (user && role === 'teacher') ? classes.filter(c => c.teacherUsername.toLowerCase() === user.toLowerCase()) : classes.filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase());
   const list = document.getElementById('teacherClassesList');
   if (list) {
     if (!mine.length) list.innerHTML = `<p class="muted-note">${t('noClasses')}</p>`;
     else list.innerHTML = mine.map(c => {
       const mem = getMembers().filter(m => m.classId === c.id);
       const tests = getClassTests().filter(x => x.classId === c.id);
-      return `<div class="tp-card"><b>${escapeHtml(c.name)}</b> · ${t('gradeN',{n:c.grade})}<div class="tp-code">${c.code}</div>
-        <div class="muted-note">${t('yourCode')} · ${t('members')}: ${mem.filter(m=>m.role!=='parent').length} · ${t('tabCreateTest')}: ${tests.length}</div>
-        <button type="button" onclick="navigator.clipboard.writeText('${c.code}')">${t('copyCode')}</button></div>`;
+      const classCode = c.code || '—';
+      const stats = getClassResults().filter(r => r.classId === c.id);
+      const avg = stats.length ? Math.round(stats.reduce((sum, item) => sum + (Number(item.pct) || 0), 0) / stats.length) : 0;
+      return `<div class="tp-card"><b>${escapeHtml(c.name)}</b> · ${t('gradeN',{n:c.grade})}<div class="tp-code">${classCode}</div>
+        <div class="muted-note">${t('yourCode')} · ${t('members')}: ${mem.filter(m=>m.role!=='parent').length} · ${t('tabCreateTest')}: ${tests.length} · Avg ${avg}%</div>
+        <button type="button" onclick="navigator.clipboard.writeText('${classCode}')">${t('copyCode')}</button></div>`;
     }).join('');
   }
   const selIds = ['testClassSelect','resultsClassSelect'];
@@ -2677,17 +2774,168 @@ function renderTeacherPanel(){
     if (!sel) return;
     const prev = sel.value;
     sel.innerHTML = mine.map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${c.code})</option>`).join('');
+    if (!mine.length) sel.innerHTML = '<option value="">—</option>';
     if (prev) sel.value = prev;
   });
   const rClass = document.getElementById('resultsClassSelect')?.value;
   const tSel = document.getElementById('resultsTestSelect');
   if (tSel) {
     const tests = getClassTests().filter(x => x.classId === rClass);
-    tSel.innerHTML = tests.map(x => `<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('');
+    tSel.innerHTML = tests.map(x => `<option value="${x.id}">${escapeHtml(x.title)}</option>`).join('') || '<option value="">—</option>';
   }
+  renderTeacherStats();
   renderClassResultsTable();
   renderClassTestsMini();
 }
+
+function getTeacherFilteredResults() {
+  const user = getCurrentUser();
+  const role = currentUserRole();
+  const classes = getClasses();
+  let rows = [...getClassResults()];
+  const classId = document.getElementById('resultsClassSelect')?.value;
+  const testId = document.getElementById('resultsTestSelect')?.value;
+  if (classId) rows = rows.filter(r => r.classId === classId);
+  if (testId) rows = rows.filter(r => r.testId === testId);
+  if (role === 'parent' && user) {
+    const links = getMembers().filter(m => m.username.toLowerCase() === user.toLowerCase() && m.role === 'parent');
+    const kids = links.map(m => (m.childUsername || '').toLowerCase()).filter(Boolean);
+    rows = rows.filter(r => kids.includes((r.username || '').toLowerCase()));
+  } else if (role !== 'teacher') {
+    rows = rows.filter(r => user && r.username.toLowerCase() === user.toLowerCase());
+  } else if (user) {
+    const myClassIds = classes.filter(c => c.teacherUsername.toLowerCase() === user.toLowerCase()).map(c => c.id);
+    rows = rows.filter(r => myClassIds.includes(r.classId));
+  }
+  return rows;
+}
+
+function renderTeacherStats(){
+  const kpiWrap = document.getElementById('teacherKpis');
+  if (!kpiWrap) return;
+  const user = getCurrentUser();
+  const classes = getClasses().filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase());
+  const memberCount = getMembers().filter(m => classes.some(c => c.id === m.classId)).length;
+  const tests = getClassTests().filter(t => classes.some(c => c.id === t.classId));
+  const results = getTeacherFilteredResults();
+  const avgPct = results.length ? Math.round(results.reduce((sum, item) => sum + (Number(item.pct) || 0), 0) / results.length) : 0;
+  const topClass = classes.map(c => ({ name: c.name, avg: results.filter(r => r.classId === c.id).length ? Math.round(results.filter(r => r.classId === c.id).reduce((sum, item) => sum + (Number(item.pct) || 0), 0) / results.filter(r => r.classId === c.id).length) : 0 })).sort((a,b)=>b.avg-a.avg)[0];
+  kpiWrap.innerHTML = `
+    <div class="teacher-kpi"><div class="kpi-label">Sinflar</div><div class="kpi-value">${classes.length}</div></div>
+    <div class="teacher-kpi"><div class="kpi-label">O'quvchilar</div><div class="kpi-value">${memberCount}</div></div>
+    <div class="teacher-kpi"><div class="kpi-label">Testlar</div><div class="kpi-value">${tests.length}</div></div>
+    <div class="teacher-kpi"><div class="kpi-label">Avg %</div><div class="kpi-value">${avgPct}%</div></div>
+  `;
+  const summaryList = document.getElementById('teacherSummaryList');
+  if (summaryList) {
+    summaryList.innerHTML = `
+      <div class="teacher-summary-item"><span>Eng yaxshi sinf</span><span class="mini">${topClass ? `${escapeHtml(topClass.name)} · ${topClass.avg}%` : 'Mavjud emas'}</span></div>
+      <div class="teacher-summary-item"><span>Umumiy natija</span><span class="mini">${results.length ? `${avgPct}% o'rtacha` : 'Natija yo\'q'}</span></div>
+    `;
+  }
+  const chart = document.getElementById('teacherChart');
+  const legend = document.getElementById('teacherChartLegend');
+  if (chart && classes.length) {
+    const values = classes.map(c => {
+      const classResults = results.filter(r => r.classId === c.id);
+      const value = classResults.length ? Math.round(classResults.reduce((sum, item) => sum + (Number(item.pct) || 0), 0) / classResults.length) : 0;
+      return { name: c.name, value };
+    }).filter(v => v.name);
+    const maxValue = Math.max(...values.map(v => v.value), 100);
+    chart.innerHTML = values.map(v => `
+      <div class="teacher-bar-col">
+        <div class="teacher-bar-value">${v.value}%</div>
+        <div class="teacher-bar-track"><div class="teacher-bar" style="height:${Math.max(10, (v.value / maxValue) * 100)}%"></div></div>
+        <div class="teacher-bar-label">${escapeHtml(v.name).slice(0, 10)}</div>
+      </div>
+    `).join('');
+    if (legend) legend.textContent = `Avg: ${avgPct}%`;
+  } else if (chart) {
+    chart.innerHTML = '<div class="muted-note">Mavjud ma\'lumot yo\'q.</div>';
+    if (legend) legend.textContent = 'Avg: 0%';
+  }
+  renderTeacherInsights();
+}
+
+function renderTeacherInsights(){
+  const container = document.getElementById('teacherStudentsInsight');
+  if (!container) return;
+  const rows = getTeacherFilteredResults();
+  if (!rows.length) {
+    container.innerHTML = '<div class="muted-note">Natija mavjud emas.</div>';
+    return;
+  }
+  const grouped = {};
+  rows.forEach(r => {
+    const key = r.username || 'unknown';
+    grouped[key] = grouped[key] || { username: key, totalScore: 0, totalCorrect: 0, totalQuestions: 0, subjectMap: {} };
+    grouped[key].totalScore += Number(r.score || 0);
+    grouped[key].totalCorrect += Number(r.correct || 0);
+    grouped[key].totalQuestions += Number(r.total || 0);
+    if (r.subjects) {
+      Object.entries(r.subjects).forEach(([subject, info]) => {
+        if (!grouped[key].subjectMap[subject]) grouped[key].subjectMap[subject] = { correct: 0, total: 0 };
+        grouped[key].subjectMap[subject].correct += Number(info.correct || 0);
+        grouped[key].subjectMap[subject].total += Number(info.total || 0);
+      });
+    }
+  });
+  const cards = Object.values(grouped).map(student => {
+    const avgPct = student.totalQuestions ? Math.round((student.totalCorrect / student.totalQuestions) * 100) : 0;
+    const subjectEntries = Object.entries(student.subjectMap).map(([subject, info]) => ({ subject, pct: info.total ? Math.round((info.correct / info.total) * 100) : 0 })).sort((a, b) => a.pct - b.pct);
+    const weakest = subjectEntries[0];
+    const strongest = subjectEntries.slice(-1)[0];
+    const badges = [];
+    if (weakest) badges.push(`<span class="teacher-badge warn">Zaif: ${escapeHtml(weakest.subject)} ${weakest.pct}%</span>`);
+    if (strongest) badges.push(`<span class="teacher-badge good">Kuchli: ${escapeHtml(strongest.subject)} ${strongest.pct}%</span>`);
+    return `
+      <div class="teacher-student-card">
+        <div class="teacher-student-top">
+          <div class="teacher-student-name">${escapeHtml(student.username)}</div>
+          <div class="teacher-student-score">${student.totalScore}</div>
+        </div>
+        <div class="teacher-progress"><div class="teacher-progress-bar" style="width:${avgPct}%"></div></div>
+        <div class="teacher-student-meta">
+          <span>${student.totalCorrect}/${student.totalQuestions}</span>
+          <span>${avgPct}%</span>
+        </div>
+        <div class="teacher-insight-badges">${badges.join('')}</div>
+      </div>
+    `;
+  }).join('');
+  container.innerHTML = cards;
+}
+
+function downloadTeacherCsv() {
+  const rows = getTeacherFilteredResults();
+  if (!rows.length) return;
+  const grouped = {};
+  rows.forEach(r => {
+    const key = r.username || 'unknown';
+    grouped[key] = grouped[key] || { username: key, score: 0, correct: 0, total: 0, subjects: {} };
+    grouped[key].score += Number(r.score || 0);
+    grouped[key].correct += Number(r.correct || 0);
+    grouped[key].total += Number(r.total || 0);
+    if (r.subjects) Object.entries(r.subjects).forEach(([subject, info]) => {
+      grouped[key].subjects[subject] = grouped[key].subjects[subject] || { correct: 0, total: 0 };
+      grouped[key].subjects[subject].correct += Number(info.correct || 0);
+      grouped[key].subjects[subject].total += Number(info.total || 0);
+    });
+  });
+  const lines = ['Student,TotalScore,Correct,Total,Percent,WeakestTopic'];
+  Object.values(grouped).forEach(student => {
+    const pct = student.total ? Math.round((student.correct / student.total) * 100) : 0;
+    const weakest = Object.entries(student.subjects).map(([subject, info]) => ({ subject, pct: info.total ? Math.round((info.correct / info.total) * 100) : 0 })).sort((a, b) => a.pct - b.pct)[0];
+    lines.push(`${student.username},${student.score},${student.correct},${student.total},${pct},${weakest ? `${weakest.subject} (${weakest.pct}%)` : '—'}`);
+  });
+  const csv = lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'teacher_dashboard.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
 function renderClassResultsTable(){
   const wrap = document.getElementById('resultsTableWrap');
   if (!wrap) return;
@@ -2710,12 +2958,32 @@ function renderClassResultsTable(){
     if (testId) rows = getClassResults().filter(r => r.testId === testId);
   }
   if (!rows.length) { wrap.innerHTML = `<p class="muted-note">${t('noResults')}</p>`; return; }
-  wrap.innerHTML = `<table class="results-table"><thead><tr><th>${t('thPlayer')}</th><th>${t('testTitle')}</th><th>${t('thCorrect')}</th><th>%</th><th>${t('thScore')}</th></tr></thead><tbody>${
-    rows.slice().reverse().map(r => {
-      const test = getClassTests().find(x => x.id === r.testId);
-      return `<tr><td>${escapeHtml(r.username)}</td><td>${escapeHtml(test?test.title:'')}</td><td>${r.correct} / ${r.total}</td><td>${r.pct}%</td><td>${r.score}</td></tr>`;
-    }).join('')
-  }</tbody></table>`;
+  const grouped = {};
+  rows.forEach(r => {
+    const key = r.username || 'unknown';
+    grouped[key] = grouped[key] || { username: key, tests: 0, totalScore: 0, totalCorrect: 0, totalQuestions: 0, subjectMap: {} };
+    grouped[key].tests += 1;
+    grouped[key].totalScore += Number(r.score || 0);
+    grouped[key].totalCorrect += Number(r.correct || 0);
+    grouped[key].totalQuestions += Number(r.total || 0);
+    if (r.subjects) {
+      Object.entries(r.subjects).forEach(([sub, info]) => {
+        if (!grouped[key].subjectMap[sub]) grouped[key].subjectMap[sub] = { correct: 0, total: 0 };
+        grouped[key].subjectMap[sub].correct += info.correct || 0;
+        grouped[key].subjectMap[sub].total += info.total || 0;
+      });
+    }
+  });
+  const rowsHtml = Object.values(grouped).map(student => {
+    const subjectEntries = Object.entries(student.subjectMap).map(([subject, info]) => ({
+      subject,
+      pct: info.total ? Math.round((info.correct / info.total) * 100) : 0
+    })).sort((a, b) => a.pct - b.pct);
+    const weakest = subjectEntries.length ? subjectEntries[0] : null;
+    const avgPct = student.totalQuestions ? Math.round((student.totalCorrect / student.totalQuestions) * 100) : 0;
+    return `<tr><td>${escapeHtml(student.username)}</td><td>${student.totalScore}</td><td>${student.totalCorrect}/${student.totalQuestions}</td><td>${avgPct}%</td><td>${weakest ? `${escapeHtml(weakest.subject)} (${weakest.pct}%)` : '—'}</td></tr>`;
+  }).join('');
+  wrap.innerHTML = `<table class="results-table"><thead><tr><th>${t('thPlayer')}</th><th>${t('thScore')}</th><th>${t('thCorrect')}</th><th>%</th><th>Zaif mavzu</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
 }
 function joinClassByCode(code, childUser){
   const user = getCurrentUser();
@@ -2759,7 +3027,19 @@ function saveClassTest(){
   const qs = collectTestQuestions();
   if (!classId || !title || !qs.length) { showFxToast(t('needQuestions'), 'var(--warn)'); return; }
   const tests = getClassTests();
-  tests.push({ id:'t'+Date.now(), classId, title, subject: document.getElementById('testSubjectInput').value.trim() || 'Fan', questions: qs, teacherUsername: user, createdAt: Date.now() });
+  const startInput = document.getElementById('testScheduleStart');
+  const endInput = document.getElementById('testScheduleEnd');
+  tests.push({
+    id:'t'+Date.now(),
+    classId,
+    title,
+    subject: document.getElementById('testSubjectInput').value.trim() || 'Fan',
+    questions: qs,
+    teacherUsername: user,
+    createdAt: Date.now(),
+    start: startInput ? startInput.value : '',
+    end: endInput ? endInput.value : ''
+  });
   writeStore(TEST_KEY, tests);
   showFxToast(t('testSaved'), 'var(--p2)');
   document.getElementById('testTitleInput').value = '';
@@ -2805,11 +3085,21 @@ function saveAssignedResult(){
   if (!user) return;
   const results = getClassResults();
   const pct = p1.total > 0 ? Math.round((p1.correct / p1.total) * 100) : 0;
-  results.push({
-    id: 'r'+Date.now(), testId: activeClassTest.id, classId: activeClassTest.classId,
-    username: user, score: p1.score, correct: p1.correct, total: p1.total, pct, date: new Date().toISOString()
-  });
+  const payload = {
+    id: 'r'+Date.now(),
+    testId: activeClassTest.id,
+    classId: activeClassTest.classId,
+    username: user,
+    score: p1.score,
+    correct: p1.correct,
+    total: p1.total,
+    pct,
+    date: new Date().toISOString(),
+    subjects: JSON.parse(JSON.stringify(subjectStats || {}))
+  };
+  results.push(payload);
   writeStore(CRESULT_KEY, results);
+  renderClassResultsTable();
 }
 
 function isSoloLike(){ return gameMode==='solo' || gameMode==='survival' || gameMode==='exam'; }
@@ -2860,6 +3150,31 @@ function startBot() { gameMode = 'bot'; }
 document.getElementById('openAuthBtn')?.addEventListener('click', () => {
   openAuthModal({ forced: false });
 });
+
+document.getElementById('teacherBtn')?.addEventListener('click', () => {
+  const current = getCurrentUser();
+  if (!current) {
+    openAuthModal({ tab: 'login' });
+    showFxToast(t('needLogin'), 'var(--gold)');
+    return;
+  }
+  if (currentUserRole() !== 'teacher' && currentUserRole() !== 'parent') {
+    setUserRole('teacher');
+  }
+  openTeacherPanel();
+});
+
+document.getElementById('createClassBtn')?.addEventListener('click', createClass);
+document.getElementById('becomeTeacherBtn')?.addEventListener('click', () => { setUserRole('teacher'); renderTeacherPanel(); showFxToast('O\'qituvchi ro\'li faollashtirildi', 'var(--p2)'); });
+document.getElementById('joinClassBtn')?.addEventListener('click', () => joinClassByCode(document.getElementById('classCodeInput').value, document.getElementById('childUsernameInput').value));
+document.getElementById('tpJoinBtn')?.addEventListener('click', () => joinClassByCode(document.getElementById('tpJoinCode').value, document.getElementById('tpJoinChild').value));
+document.getElementById('saveTestBtn')?.addEventListener('click', saveClassTest);
+document.getElementById('addQuestionBtn')?.addEventListener('click', () => fillTestQuestionEditors((document.querySelectorAll('.q-editor').length || 0) + 1));
+document.getElementById('closeTeacher')?.addEventListener('click', closeTeacherPanel);
+document.getElementById('exportTeacherCsvBtn')?.addEventListener('click', downloadTeacherCsv);
+
+document.getElementById('resultsClassSelect')?.addEventListener('change', renderTeacherPanel);
+document.getElementById('resultsTestSelect')?.addEventListener('change', renderTeacherPanel);
 
 document.getElementById('guestSaveRegisterBtn')?.addEventListener('click', () => {
   openAuthModal({ forced: false, tab: 'register' });
@@ -8559,6 +8874,9 @@ function finishGame(){
   clearTimeout(blitzBotWait);
   clearTimeout(botDecisionWait);
   closePauseMenu();
+  if (activeClassTest && getCurrentUser()) {
+    saveAssignedResult();
+  }
   document.getElementById('game').style.display = 'none';
   document.getElementById('result').style.display = 'block';
   document.getElementById('result').classList.add('celebrate');
