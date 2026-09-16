@@ -72,8 +72,18 @@ function randomCode() {
 
 router.get('/classes', requireAuth, (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM classes ORDER BY created_at DESC').all();
-    res.json({ classes: rows.map(classShape) });
+    const rows = db.prepare(`
+      SELECT DISTINCT c.*
+      FROM classes c
+      LEFT JOIN class_members cm ON cm.class_id = c.id
+      WHERE c.teacher_username = ? COLLATE NOCASE OR cm.username = ? COLLATE NOCASE
+      ORDER BY c.created_at DESC
+    `).all(req.user.username, req.user.username);
+    const memberships = db.prepare('SELECT * FROM class_members WHERE username = ? COLLATE NOCASE').all(req.user.username);
+    res.json({
+      classes: rows.map(classShape),
+      members: memberships.map(membershipShape).filter(Boolean),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Sinflar olishda xatolik yuz berdi.' });

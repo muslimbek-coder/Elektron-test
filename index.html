@@ -3014,6 +3014,26 @@ function getClassTests(){ return readStore(TEST_KEY, []); }
 function getMembers(){ return readStore(MEMBER_KEY, []); }
 function getClassResults(){ return readStore(CRESULT_KEY, []); }
 function getTestProposals(){ return readStore(PROPOSAL_KEY, []); }
+async function syncRemoteClasses(){
+  if (!window.BilimDueliAPI?.Classes || !getCurrentUser()) return false;
+  try {
+    const data = await window.BilimDueliAPI.Classes.list();
+    const classes = Array.isArray(data.classes) ? data.classes : [];
+    const members = getMembers().filter(m => String(m.source || '') !== 'remote');
+    writeStore(CLASS_KEY, classes);
+    writeStore(MEMBER_KEY, members.concat((data.members || []).map(m => ({ ...m, source: 'remote' }))));
+    const tests = [];
+    for (const cls of classes) {
+      const testData = await window.BilimDueliAPI.Classes.tests(cls.id);
+      if (Array.isArray(testData.tests)) tests.push(...testData.tests);
+    }
+    writeStore(TEST_KEY, tests);
+    return true;
+  } catch (error) {
+    console.warn('Remote class sync failed:', error.message);
+    return false;
+  }
+}
 function makeCode(){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let s = '';
@@ -3375,12 +3395,37 @@ function renderClassResultsTable(){
   }).join('');
   wrap.innerHTML = `<table class="results-table"><thead><tr><th>${t('thPlayer')}</th><th>${t('thScore')}</th><th>${t('thCorrect')}</th><th>%</th><th>Zaif mavzu</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
 }
-function joinClassByCode(code, childUser){
+async function joinClassByCode(code, childUser){
   const user = getCurrentUser();
   if (!user) { openAuthModal({ tab:'login' }); showFxToast(t('needLogin'), 'var(--gold)'); return; }
   code = (code||'').trim().toUpperCase();
   childUser = (childUser || '').trim();
-  const cls = getClasses().find(c => c.code === code);
+  if (!code) { showFxToast(t('joinFail'), 'var(--warn)'); return; }
+  let cls = null;
+  let remoteJoin = false;
+  try {
+    if (window.BilimDueliAPI?.Classes) {
+      const data = await window.BilimDueliAPI.Classes.join(code, childUser);
+      cls = data.class;
+      remoteJoin = true;
+      const classes = getClasses().filter(c => String(c.id) !== String(cls.id));
+      classes.push(cls);
+      writeStore(CLASS_KEY, classes);
+      const members = getMembers().filter(m => !(String(m.classId) === String(cls.id) && m.username.toLowerCase() === user.toLowerCase()));
+      if (data.member) members.push({ ...data.member, source: 'remote' });
+      writeStore(MEMBER_KEY, members);
+      const testData = await window.BilimDueliAPI.Classes.tests(cls.id);
+      const tests = getClassTests().filter(test => String(test.classId) !== String(cls.id));
+      writeStore(TEST_KEY, tests.concat(Array.isArray(testData.tests) ? testData.tests : []));
+    }
+  } catch (error) {
+    const localClass = getClasses().find(c => c.code === code);
+    if (!localClass) {
+      showFxToast(error.status === 404 ? 'Backend topilmadi. Admin backend manzilini tekshirsin.' : (error.message || t('joinFail')), 'var(--warn)');
+      return;
+    }
+    cls = localClass;
+  }
   if (!cls) { showFxToast(t('joinFail'), 'var(--warn)'); return; }
   if (childUser) {
     const child = getUserRecord(childUser);
@@ -3398,7 +3443,7 @@ function joinClassByCode(code, childUser){
   } else {
     members.push({ classId: cls.id, username: user, role, childUsername: childUser });
   }
-  writeStore(MEMBER_KEY, members);
+  if (!remoteJoin) writeStore(MEMBER_KEY, members);
   const joinMessage = document.getElementById('tpJoinMsg');
   const upperCaseCode = cls.code ? cls.code.toUpperCase() : code;
   if (joinMessage) {
@@ -3414,20 +3459,29 @@ function joinClassByCode(code, childUser){
   const classTestsBox = document.getElementById('classTestsBox');
   if (classTestsBox) classTestsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-function createClass(){
+async function createClass(){
   const user = getCurrentUser();
   if (!user) { openAuthModal({ tab:'register' }); showFxToast(t('needLogin'), 'var(--gold)'); return; }
   if (currentUserRole() !== 'teacher') setUserRole('teacher');
   const name = document.getElementById('newClassName').value.trim() || t('gradeN', { n: document.getElementById('newClassGrade').value });
   const g = parseInt(document.getElementById('newClassGrade').value, 10) || 1;
-  const classes = getClasses();
-  classes.push({ id: 'c'+Date.now(), code: makeCode(), name, grade: g, teacherUsername: user, createdAt: Date.now() });
+  let created = null;
+  try {
+    if (window.BilimDueliAPI?.Classes) {
+      const data = await window.BilimDueliAPI.Classes.create({ name, grade: g });
+      created = data.class;
+    }
+  } catch (error) {
+    console.warn('Remote class creation failed:', error.message);
+  }
+  const classes = getClasses().filter(c => !created || String(c.id) !== String(created.id));
+  classes.push(created || { id: 'c'+Date.now(), code: makeCode(), name, grade: g, teacherUsername: user, createdAt: Date.now() });
   writeStore(CLASS_KEY, classes);
   document.getElementById('newClassName').value = '';
   showFxToast(t('classCreated'), 'var(--p2)');
   renderTeacherPanel();
 }
-function saveClassTest(){
+async function saveClassTest(){
   const user = getCurrentUser();
   if (!user) { openAuthModal({}); return; }
   const role = currentUserRole();
@@ -3465,7 +3519,17 @@ function saveClassTest(){
     showFxToast(t('proposalSent'), 'var(--p2)');
   } else {
     test.teacherUsername = user;
-    tests.push(test);
+    let remoteTest = null;
+    try {
+      if (window.BilimDueliAPI?.Classes && !String(classId).startsWith('c')) {
+        const data = await window.BilimDueliAPI.Classes.createTest(classId, test);
+        remoteTest = data.test;
+      }
+    } catch (error) {
+      showFxToast(error.message || t('testSaved'), 'var(--warn)');
+      return;
+    }
+    tests.push(remoteTest || test);
     writeStore(TEST_KEY, tests);
     showFxToast(t('testSaved'), 'var(--p2)');
   }
@@ -10171,7 +10235,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('profCountry')?.addEventListener('change', (e) => {
     fillRegionSelect(document.getElementById('profRegion'), e.target.value);
   });
-  refreshCurrentUser().finally(() => updateUserUI());
+  refreshCurrentUser().then(() => syncRemoteClasses()).finally(() => {
+    updateUserUI();
+    renderTeacherPanel();
+    renderClassTestsMini();
+  });
   applyDeepLinkFromURL();
 });
 

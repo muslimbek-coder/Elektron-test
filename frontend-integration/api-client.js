@@ -38,7 +38,9 @@
     try { data = await res.json(); } catch (e) { /* bo'sh javob */ }
     if (!res.ok) {
       const msg = (data && data.error) || `So'rov xato bilan tugadi (${res.status})`;
-      throw new Error(msg);
+      const error = new Error(msg);
+      error.status = res.status;
+      throw error;
     }
     return data;
   }
@@ -100,6 +102,46 @@
     async achievements(name) {
       const data = await apiFetch(`/api/achievements/${encodeURIComponent(name)}`);
       return data.achievements;
+    },
+  };
+
+  // ================= CLASSES & ASSIGNED TESTS =================
+  const Classes = {
+    async list() {
+      return apiFetch('/api/classes');
+    },
+    async create({ name, grade }) {
+      return apiFetch('/api/classes', {
+        method: 'POST',
+        body: JSON.stringify({ name, grade }),
+      });
+    },
+    async findByCode(code) {
+      return apiFetch(`/api/classes/${encodeURIComponent(String(code || '').trim().toUpperCase())}`);
+    },
+    async join(code, childUsername) {
+      return apiFetch(`/api/classes/${encodeURIComponent(String(code || '').trim().toUpperCase())}/join`, {
+        method: 'POST',
+        body: JSON.stringify({ childUsername: childUsername || '' }),
+      });
+    },
+    async tests(classId) {
+      return apiFetch(`/api/classes/${encodeURIComponent(classId)}/tests`);
+    },
+    async createTest(classId, { title, subject, questions }) {
+      return apiFetch(`/api/classes/${encodeURIComponent(classId)}/tests`, {
+        method: 'POST',
+        body: JSON.stringify({ title, subject, questions }),
+      });
+    },
+    async results(classId) {
+      return apiFetch(`/api/classes/${encodeURIComponent(classId)}/results`);
+    },
+    async saveResult(classId, result) {
+      return apiFetch(`/api/classes/${encodeURIComponent(classId)}/results`, {
+        method: 'POST',
+        body: JSON.stringify(result),
+      });
     },
   };
 
@@ -166,6 +208,7 @@
   window.BilimDueliAPI = {
     Auth,
     Results,
+    Classes,
     pickDuelQuestions,
     realtime: createRealtimeClient(),
   };
