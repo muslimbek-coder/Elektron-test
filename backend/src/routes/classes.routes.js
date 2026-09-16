@@ -92,6 +92,9 @@ router.get('/classes', requireAuth, (req, res) => {
 
 router.post('/classes', requireAuth, (req, res) => {
   try {
+    if (req.user.role !== 'teacher') {
+      return res.status(403).json({ error: 'Faqat o\'qituvchi sinf yarata oladi.' });
+    }
     const { name, grade } = req.body || {};
     const finalName = String(name || '').trim();
     const finalGrade = Number(grade) || 1;
@@ -144,11 +147,13 @@ router.post('/classes/:code/join', requireAuth, (req, res) => {
     if (!cls) return res.status(404).json({ error: 'Kod topilmadi.' });
 
     const user = req.user.username;
-    const role = childUsername ? 'parent' : 'student';
+    if (req.user.role !== 'student') {
+      return res.status(403).json({ error: 'Faqat o\'quvchi sinfga qo\'shilishi mumkin.' });
+    }
+    const role = 'student';
 
     if (childUsername) {
-      const child = db.prepare('SELECT * FROM users WHERE username = ? COLLATE NOCASE').get(childUsername.trim());
-      if (!child) return res.status(404).json({ error: 'Farzand username topilmadi.' });
+      return res.status(403).json({ error: 'Ota-ona kod orqali sinfga qo\'shilmaydi.' });
     }
 
     db.prepare(`
@@ -176,6 +181,48 @@ router.post('/classes/:code/join', requireAuth, (req, res) => {
   }
 });
 
+router.delete('/classes/:classId', requireAuth, (req, res) => {
+  try {
+    const classId = Number(req.params.classId);
+    const cls = db.prepare('SELECT * FROM classes WHERE id = ?').get(classId);
+    if (!cls) return res.status(404).json({ error: 'Sinf topilmadi.' });
+    if (req.user.role !== 'teacher' || cls.teacher_username.toLowerCase() !== req.user.username.toLowerCase()) {
+      return res.status(403).json({ error: 'Faqat sinf o\'qituvchisi o\'chira oladi.' });
+    }
+    const remove = db.transaction(() => {
+      db.prepare('DELETE FROM class_results WHERE class_id = ?').run(classId);
+      db.prepare('DELETE FROM class_tests WHERE class_id = ?').run(classId);
+      db.prepare('DELETE FROM class_members WHERE class_id = ?').run(classId);
+      db.prepare('DELETE FROM classes WHERE id = ?').run(classId);
+    });
+    remove();
+    res.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Sinfni o\'chirishda xatolik yuz berdi.' });
+  }
+});
+
+router.get('/parent/results/:childUsername', requireAuth, (req, res) => {
+  try {
+    if (req.user.role !== 'parent') return res.status(403).json({ error: 'Faqat ota-ona farzand natijasini ko\'ra oladi.' });
+    const childUsername = String(req.params.childUsername || '').trim();
+    if (!childUsername) return res.status(400).json({ error: 'Farzand username\'ini kiriting.' });
+    const child = db.prepare('SELECT username FROM users WHERE username = ? COLLATE NOCASE').get(childUsername);
+    if (!child) return res.status(404).json({ error: 'Farzand username topilmadi.' });
+    const rows = db.prepare('SELECT * FROM class_results WHERE username = ? COLLATE NOCASE ORDER BY created_at DESC').all(child.username);
+    res.json({ results: rows.map((row) => ({
+      id: String(row.id), classId: String(row.class_id), testId: row.test_id,
+      username: row.username, score: Number(row.score) || 0, total: Number(row.total) || 0,
+      correct: Number(row.correct) || 0, pct: Number(row.pct) || 0,
+      subjects: (() => { try { return JSON.parse(row.subjects || '{}'); } catch (e) { return {}; } })(), date: row.created_at,
+    })) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Farzand natijalarini olishda xatolik yuz berdi.' });
+  }
+});
+
 router.get('/classes/:classId/tests', (req, res) => {
   try {
     const classId = Number(req.params.classId);
@@ -199,7 +246,7 @@ router.post('/classes/:classId/tests', requireAuth, (req, res) => {
     const cls = db.prepare('SELECT * FROM classes WHERE id = ?').get(classId);
     if (!cls) return res.status(404).json({ error: 'Sinf topilmadi.' });
 
-    const isTeacher = cls.teacher_username.toLowerCase() === req.user.username.toLowerCase();
+    const isTeacher = req.user.role === 'teacher' && cls.teacher_username.toLowerCase() === req.user.username.toLowerCase();
     if (!isTeacher) return res.status(403).json({ error: 'Test yaratishga ruxsat yo\'q.' });
 
     const normalizedQuestions = questions.map(normalizeQuestion).filter(Boolean);
@@ -226,9 +273,14 @@ router.post('/classes/:classId/tests', requireAuth, (req, res) => {
   }
 });
 
-router.get('/classes/:classId/results', (req, res) => {
+router.get('/classes/:classId/results', requireAuth, (req, res) => {
   try {
     const classId = Number(req.params.classId);
+    const cls = db.prepare('SELECT * FROM classes WHERE id = ?').get(classId);
+    if (!cls) return res.status(404).json({ error: 'Sinf topilmadi.' });
+    if (req.user.role !== 'teacher' || cls.teacher_username.toLowerCase() !== req.user.username.toLowerCase()) {
+      return res.status(403).json({ error: 'Natijalarni ko\'rishga ruxsat yo\'q.' });
+    }
     const rows = db.prepare('SELECT * FROM class_results WHERE class_id = ? ORDER BY created_at DESC').all(classId);
     res.json({ results: rows.map((row) => ({
       id: String(row.id),

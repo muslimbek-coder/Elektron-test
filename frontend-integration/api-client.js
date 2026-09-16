@@ -12,10 +12,10 @@
  */
 (function () {
   // ==== 1) SOZLAMA: backend manzilini shu yerga yozing ====
-  // Prod URL (Vercel deploy): https://bilim-dueli-backend.vercel.app
+  // Production backend URL (Render): https://bilim-dueli-backend-bddq.onrender.com
   // Istalgan vaqtda browserdan o'zgartirish uchun global o'zgaruvchidan ham foydalanish mumkin:
   // window.BILIM_DUELI_BACKEND_URL = 'https://your-backend.example.com';
-  const BACKEND_URL = (window.BILIM_DUELI_BACKEND_URL || 'https://bilim-dueli-backend.vercel.app').replace(/\/$/, '');
+  const BACKEND_URL = (window.BILIM_DUELI_BACKEND_URL || 'https://bilim-dueli-backend-bddq.onrender.com').replace(/\/$/, '');
 
   const TOKEN_KEY = 'bilimDueliToken';
 
@@ -134,6 +134,9 @@
         body: JSON.stringify({ title, subject, questions }),
       });
     },
+    async remove(classId) {
+      return apiFetch(`/api/classes/${encodeURIComponent(classId)}`, { method: 'DELETE' });
+    },
     async results(classId) {
       return apiFetch(`/api/classes/${encodeURIComponent(classId)}/results`);
     },
@@ -142,6 +145,13 @@
         method: 'POST',
         body: JSON.stringify(result),
       });
+    },
+  };
+
+  const Parent = {
+    async results(childUsername) {
+      const data = await apiFetch(`/api/parent/results/${encodeURIComponent(childUsername)}`);
+      return data.results || [];
     },
   };
 
@@ -209,6 +219,7 @@
     Auth,
     Results,
     Classes,
+    Parent,
     pickDuelQuestions,
     realtime: createRealtimeClient(),
   };

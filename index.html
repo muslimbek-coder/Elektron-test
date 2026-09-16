@@ -2457,6 +2457,7 @@
       <button type="button" class="tp-tab" data-tp="join" data-i18n="tabJoin">Qo'shilish</button>
     </div>
     <div class="tp-pane active" id="tpClasses">
+      <div id="teacherClassBuilder">
       <div class="tp-field">
         <label data-i18n="className">Sinf nomi</label>
         <input type="text" id="newClassName" maxlength="40" placeholder="5-A, Matematika guruhi...">
@@ -2466,7 +2467,15 @@
         <button type="button" class="primary" id="createClassBtn" data-i18n="btnCreateClass">Sinf ochish</button>
         <button type="button" id="becomeTeacherBtn" data-i18n="btnBecomeTeacher">Men o'qituvchiman</button>
       </div>
-      <p id="parentProposalHint" class="muted-note" style="display:none;" data-i18n="parentHint">Farzandingiz sinfiga test taklif qilish uchun "Test yaratish" bo'limidan foydalaning. Taklif ustoz tasdiqlaganidan keyin o'quvchilarga ko'rinadi.</p>
+      </div>
+      <div id="parentResultsLookup" style="display:none;">
+        <div class="tp-field">
+          <label>Farzand username'i</label>
+          <input type="text" id="parentChildUsername" maxlength="20" placeholder="Masalan: ali123">
+        </div>
+        <button type="button" class="primary" id="viewChildResultsBtn">Farzand natijalarini ko'rish</button>
+        <p id="parentResultsMsg" class="muted-note" style="margin-top:10px;"></p>
+      </div>
       <div id="teacherClassesList"></div>
       <div id="testProposalsList"></div>
     </div>
@@ -3023,11 +3032,17 @@ async function syncRemoteClasses(){
     writeStore(CLASS_KEY, classes);
     writeStore(MEMBER_KEY, members.concat((data.members || []).map(m => ({ ...m, source: 'remote' }))));
     const tests = [];
+    const results = [];
     for (const cls of classes) {
       const testData = await window.BilimDueliAPI.Classes.tests(cls.id);
       if (Array.isArray(testData.tests)) tests.push(...testData.tests);
+      if (currentUserRole() === 'teacher') {
+        const resultData = await window.BilimDueliAPI.Classes.results(cls.id);
+        if (Array.isArray(resultData.results)) results.push(...resultData.results);
+      }
     }
     writeStore(TEST_KEY, tests);
+    if (currentUserRole() === 'teacher') writeStore(CRESULT_KEY, results);
     return true;
   } catch (error) {
     console.warn('Remote class sync failed:', error.message);
@@ -3064,15 +3079,20 @@ function openTeacherPanel(){
   }
   const role = currentUserRole();
   if (role !== 'teacher' && role !== 'parent') {
-    setUserRole('teacher');
+    showFxToast('Bu panel faqat o\'qituvchi yoki ota-ona uchun.', 'var(--warn)');
+    return;
   }
   document.getElementById('teacherOverlay').classList.add('open');
   const gradeSel = document.getElementById('newClassGrade');
   if (gradeSel && !gradeSel.options.length) {
     for (let g=1;g<=11;g++) gradeSel.insertAdjacentHTML('beforeend', `<option value="${g}">${t('gradeN',{n:g})}</option>`);
   }
+  const isParent = role === 'parent';
+  document.getElementById('teacherClassBuilder')?.style.setProperty('display', isParent ? 'none' : 'block');
+  document.getElementById('parentResultsLookup')?.style.setProperty('display', isParent ? 'block' : 'none');
+  document.getElementById('classJoinBox')?.style.setProperty('display', isParent ? 'none' : '');
   const parentHint = document.getElementById('parentProposalHint');
-  if (parentHint) parentHint.style.display = currentUserRole() === 'parent' ? 'block' : 'none';
+  if (parentHint) parentHint.style.display = 'none';
   fillTestQuestionEditors(Math.max(1, document.querySelectorAll('.q-editor').length || 2));
   renderTeacherPanel();
 }
@@ -3129,10 +3149,16 @@ function collectTestQuestions(){
 function renderTeacherPanel(){
   const user = getCurrentUser();
   const role = currentUserRole();
+  const isTeacher = role === 'teacher';
+  const isParent = role === 'parent';
+  document.getElementById('teacherClassBuilder')?.style.setProperty('display', isTeacher ? 'block' : 'none');
+  document.getElementById('parentResultsLookup')?.style.setProperty('display', isParent ? 'block' : 'none');
+  document.querySelector('[data-tp="create"]')?.style.setProperty('display', isTeacher ? '' : 'none');
+  document.querySelector('[data-tp="join"]')?.style.setProperty('display', 'none');
+  document.getElementById('tpCreate')?.style.setProperty('display', isTeacher ? '' : 'none');
+  document.getElementById('tpJoin')?.style.setProperty('display', 'none');
   const classes = getClasses();
-  const mine = role === 'parent'
-    ? classes.filter(c => getMembers().some(m => m.classId === c.id && m.username.toLowerCase() === (user || '').toLowerCase()))
-    : classes.filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase());
+  const mine = isTeacher ? classes.filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase()) : [];
   const list = document.getElementById('teacherClassesList');
   if (list) {
     if (!mine.length) list.innerHTML = `<p class="muted-note">${t('noClasses')}</p>`;
@@ -3144,7 +3170,8 @@ function renderTeacherPanel(){
       const avg = stats.length ? Math.round(stats.reduce((sum, item) => sum + (Number(item.pct) || 0), 0) / stats.length) : 0;
       return `<div class="tp-card"><b>${escapeHtml(c.name)}</b> · ${t('gradeN',{n:c.grade})}<div class="tp-code">${classCode}</div>
         <div class="muted-note">${t('yourCode')} · ${t('members')}: ${mem.filter(m=>m.role!=='parent').length} · ${t('tabCreateTest')}: ${tests.length} · Avg ${avg}%</div>
-        <button type="button" class="copy-class-code" data-code="${escapeHtml(classCode)}">${t('copyCode')}</button></div>`;
+        <button type="button" class="copy-class-code" data-code="${escapeHtml(classCode)}">${t('copyCode')}</button>
+        <button type="button" class="delete-class-btn" data-class-id="${escapeHtml(c.id)}">Sinfni o'chirish</button></div>`;
     }).join('');
   }
   const selIds = ['testClassSelect','resultsClassSelect'];
@@ -3164,9 +3191,10 @@ function renderTeacherPanel(){
   }
   const saveTestButton = document.getElementById('saveTestBtn');
   if (saveTestButton) {
-    saveTestButton.textContent = role === 'parent' ? t('proposalSend') : t('btnSaveTest');
+    saveTestButton.textContent = t('btnSaveTest');
+    saveTestButton.disabled = !isTeacher;
   }
-  renderTestProposals(role, user, classes);
+  renderTestProposals('teacher', user, classes);
   renderTeacherStats();
   renderClassResultsTable();
   renderClassTestsMini();
@@ -3398,6 +3426,10 @@ function renderClassResultsTable(){
 async function joinClassByCode(code, childUser){
   const user = getCurrentUser();
   if (!user) { openAuthModal({ tab:'login' }); showFxToast(t('needLogin'), 'var(--gold)'); return; }
+  if (currentUserRole() !== 'student') {
+    showFxToast('Sinf kodiga faqat o\'quvchi qo\'shila oladi.', 'var(--warn)');
+    return;
+  }
   code = (code||'').trim().toUpperCase();
   childUser = (childUser || '').trim();
   if (!code) { showFxToast(t('joinFail'), 'var(--warn)'); return; }
@@ -3462,6 +3494,7 @@ async function joinClassByCode(code, childUser){
 async function createClass(){
   const user = getCurrentUser();
   if (!user) { openAuthModal({ tab:'register' }); showFxToast(t('needLogin'), 'var(--gold)'); return; }
+  if (currentUserRole() !== 'teacher') { showFxToast('Faqat o\'qituvchi sinf yarata oladi.', 'var(--warn)'); return; }
   if (currentUserRole() !== 'teacher') setUserRole('teacher');
   const name = document.getElementById('newClassName').value.trim() || t('gradeN', { n: document.getElementById('newClassGrade').value });
   const g = parseInt(document.getElementById('newClassGrade').value, 10) || 1;
@@ -3485,6 +3518,7 @@ async function saveClassTest(){
   const user = getCurrentUser();
   if (!user) { openAuthModal({}); return; }
   const role = currentUserRole();
+  if (role !== 'teacher') { showFxToast('Faqat o\'qituvchi test yarata oladi.', 'var(--warn)'); return; }
   const classId = document.getElementById('testClassSelect').value;
   const title = document.getElementById('testTitleInput').value.trim();
   const qs = collectTestQuestions();
@@ -3538,6 +3572,38 @@ async function saveClassTest(){
   fillTestQuestionEditors(2);
   renderTeacherPanel();
 }
+async function deleteClass(classId){
+  if (currentUserRole() !== 'teacher') return;
+  if (!window.confirm('Bu sinf, testlar va natijalar o\'chiriladi. Davom etasizmi?')) return;
+  try {
+    if (window.BilimDueliAPI?.Classes && !String(classId).startsWith('c')) {
+      await window.BilimDueliAPI.Classes.remove(classId);
+    }
+    writeStore(CLASS_KEY, getClasses().filter(c => String(c.id) !== String(classId)));
+    writeStore(TEST_KEY, getClassTests().filter(test => String(test.classId) !== String(classId)));
+    writeStore(MEMBER_KEY, getMembers().filter(member => String(member.classId) !== String(classId)));
+    writeStore(CRESULT_KEY, getClassResults().filter(result => String(result.classId) !== String(classId)));
+    renderTeacherPanel();
+    showFxToast('Sinf o\'chirildi.', 'var(--p2)');
+  } catch (error) {
+    showFxToast(error.message || 'Sinfni o\'chirib bo\'lmadi.', 'var(--warn)');
+  }
+}
+async function viewChildResults(){
+  const input = document.getElementById('parentChildUsername');
+  const msg = document.getElementById('parentResultsMsg');
+  const username = input?.value.trim();
+  if (!username) { if (msg) msg.textContent = 'Farzand username\'ini kiriting.'; return; }
+  try {
+    const rows = await window.BilimDueliAPI.Parent.results(username);
+    writeStore(CRESULT_KEY, rows);
+    if (msg) msg.textContent = rows.length ? `${username} uchun ${rows.length} ta natija topildi.` : 'Natija topilmadi.';
+    renderClassResultsTable();
+    switchTpTab('results');
+  } catch (error) {
+    if (msg) msg.textContent = error.message || 'Natijalarni olishda xatolik.';
+  }
+}
 function updateTestProposal(id, status){
   const user = getCurrentUser();
   if (!user || currentUserRole() !== 'teacher') return;
@@ -3589,7 +3655,7 @@ function startAssignedTest(id){
   beginMatch(false);
   closeTeacherPanel();
 }
-function saveAssignedResult(){
+async function saveAssignedResult(){
   if (!activeClassTest) return;
   const user = getCurrentUser();
   if (!user) return;
@@ -3607,6 +3673,13 @@ function saveAssignedResult(){
     date: new Date().toISOString(),
     subjects: JSON.parse(JSON.stringify(subjectStats || {}))
   };
+  try {
+    if (window.BilimDueliAPI?.Classes && !String(activeClassTest.classId).startsWith('c')) {
+      await window.BilimDueliAPI.Classes.saveResult(activeClassTest.classId, payload);
+    }
+  } catch (error) {
+    console.warn('Class result remote save failed:', error.message);
+  }
   results.push(payload);
   writeStore(CRESULT_KEY, results);
   renderClassResultsTable();
@@ -3691,6 +3764,8 @@ document.getElementById('testQuestionsBox')?.addEventListener('click', (event) =
 });
 
 document.getElementById('teacherClassesList')?.addEventListener('click', async (event) => {
+  const deleteButton = event.target.closest('.delete-class-btn');
+  if (deleteButton) { deleteClass(deleteButton.dataset.classId); return; }
   const button = event.target.closest('.copy-class-code');
   if (!button) return;
   try {
@@ -3714,13 +3789,14 @@ document.getElementById('teacherBtn')?.addEventListener('click', () => {
     return;
   }
   if (currentUserRole() !== 'teacher' && currentUserRole() !== 'parent') {
-    setUserRole('teacher');
+    showFxToast('Bu bo\'lim faqat o\'qituvchi yoki ota-ona uchun.', 'var(--warn)');
+    return;
   }
   openTeacherPanel();
 });
 
 document.getElementById('createClassBtn')?.addEventListener('click', createClass);
-document.getElementById('becomeTeacherBtn')?.addEventListener('click', () => { setUserRole('teacher'); renderTeacherPanel(); showFxToast('O\'qituvchi ro\'li faollashtirildi', 'var(--p2)'); });
+document.getElementById('becomeTeacherBtn')?.addEventListener('click', () => showFxToast('O\'qituvchi roli ro\'yxatdan o\'tishda tanlanadi.', 'var(--gold)'));
 document.getElementById('joinClassBtn')?.addEventListener('click', () => joinClassByCode(document.getElementById('classCodeInput').value, document.getElementById('childUsernameInput').value));
 document.getElementById('tpJoinBtn')?.addEventListener('click', () => joinClassByCode(document.getElementById('tpJoinCode').value, document.getElementById('tpJoinChild').value));
 document.getElementById('classCodeInput')?.addEventListener('keydown', (event) => { if (event.key === 'Enter') joinClassByCode(document.getElementById('classCodeInput').value, document.getElementById('childUsernameInput').value); });
@@ -3729,6 +3805,7 @@ document.getElementById('saveTestBtn')?.addEventListener('click', saveClassTest)
 document.getElementById('addQuestionBtn')?.addEventListener('click', () => fillTestQuestionEditors((document.querySelectorAll('.q-editor').length || 0) + 1));
 document.getElementById('closeTeacher')?.addEventListener('click', closeTeacherPanel);
 document.getElementById('exportTeacherCsvBtn')?.addEventListener('click', downloadTeacherCsv);
+document.getElementById('viewChildResultsBtn')?.addEventListener('click', viewChildResults);
 
 document.getElementById('resultsClassSelect')?.addEventListener('change', renderTeacherPanel);
 document.getElementById('resultsTestSelect')?.addEventListener('change', renderTeacherPanel);
@@ -10200,6 +10277,9 @@ function displayNameOf(rec, fallback) {
 function updateUserUI() {
   const user = getCurrentUser();
   const rec = getUserRecord(user);
+  const role = rec && rec.role ? rec.role : 'student';
+  const classJoinBox = document.getElementById('classJoinBox');
+  if (classJoinBox) classJoinBox.style.display = user && role === 'student' ? '' : 'none';
   const label = document.getElementById('currentUserLabel');
   const openBtn = document.getElementById('openAuthBtn');
   const logoutBtn = document.getElementById('logoutBtn');

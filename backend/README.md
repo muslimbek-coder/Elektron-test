@@ -47,6 +47,16 @@ Deploy qadamlari (Render misolida):
 > tozalanishi mumkin — chinakam productionda "Persistent Disk" (Render) yoki Postgres'ga o'tishni
 > tavsiya qilaman. Hozircha o'quvchilar soni uchun SQLite yetarli va oddiy.
 
+### Tayyor Blueprint orqali deploy
+
+Repository ildizidagi `render.yaml` tayyor. Render'da **New + -> Blueprint** ni tanlab,
+GitHub repositorysini ulang. Blueprint backendni `backend/` papkasidan ishga tushiradi,
+`/var/data` persistent diskini ulaydi va `/api/health` orqali tekshiradi. Deploy vaqtida
+`CORS_ORIGIN` qiymatiga frontendning haqiqiy Vercel domenini kiriting.
+
+Deploy tugagach, berilgan `https://...onrender.com` manzilini
+`frontend-integration/api-client.js` ichidagi `BACKEND_URL` qiymatiga yozing.
+
 ## API
 
 Barcha javoblar JSON. Xatolarda `{ "error": "..." }` qaytadi.

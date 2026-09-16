@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: bilim-dueli-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 30d
+      - key: CORS_ORIGIN
+        sync: false
+      - key: DB_PATH
+        value: /var/data/bilimdueli.db
+    disk:
+      name: bilim-dueli-data
+      mountPath: /var/data
+      sizeGB: 1
