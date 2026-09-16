@@ -3400,10 +3400,19 @@ function joinClassByCode(code, childUser){
   }
   writeStore(MEMBER_KEY, members);
   const joinMessage = document.getElementById('tpJoinMsg');
-  if (joinMessage) joinMessage.textContent = childUser ? t('joinParentOk') : t('joinStudentOk');
-  showFxToast(t('joinOk'), 'var(--p2)');
+  const upperCaseCode = cls.code ? cls.code.toUpperCase() : code;
+  if (joinMessage) {
+    joinMessage.textContent = `${escapeHtml(cls.name)} sinfiga qo'shildingiz. Kod: ${escapeHtml(upperCaseCode)}${childUser ? ' · ota-ona' : ' · o\'quvchi'}`;
+  }
+  showFxToast(`${escapeHtml(cls.name)} sinfiga qo'shildi`, 'var(--p2)');
+  if (document.getElementById('classCodeInput')) document.getElementById('classCodeInput').value = '';
+  if (document.getElementById('childUsernameInput')) document.getElementById('childUsernameInput').value = '';
+  if (document.getElementById('tpJoinCode')) document.getElementById('tpJoinCode').value = '';
+  if (document.getElementById('tpJoinChild')) document.getElementById('tpJoinChild').value = '';
   renderTeacherPanel();
   renderClassTestsMini();
+  const classTestsBox = document.getElementById('classTestsBox');
+  if (classTestsBox) classTestsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function createClass(){
   const user = getCurrentUser();
@@ -3650,6 +3659,8 @@ document.getElementById('createClassBtn')?.addEventListener('click', createClass
 document.getElementById('becomeTeacherBtn')?.addEventListener('click', () => { setUserRole('teacher'); renderTeacherPanel(); showFxToast('O\'qituvchi ro\'li faollashtirildi', 'var(--p2)'); });
 document.getElementById('joinClassBtn')?.addEventListener('click', () => joinClassByCode(document.getElementById('classCodeInput').value, document.getElementById('childUsernameInput').value));
 document.getElementById('tpJoinBtn')?.addEventListener('click', () => joinClassByCode(document.getElementById('tpJoinCode').value, document.getElementById('tpJoinChild').value));
+document.getElementById('classCodeInput')?.addEventListener('keydown', (event) => { if (event.key === 'Enter') joinClassByCode(document.getElementById('classCodeInput').value, document.getElementById('childUsernameInput').value); });
+document.getElementById('tpJoinCode')?.addEventListener('keydown', (event) => { if (event.key === 'Enter') joinClassByCode(document.getElementById('tpJoinCode').value, document.getElementById('tpJoinChild').value); });
 document.getElementById('saveTestBtn')?.addEventListener('click', saveClassTest);
 document.getElementById('addQuestionBtn')?.addEventListener('click', () => fillTestQuestionEditors((document.querySelectorAll('.q-editor').length || 0) + 1));
 document.getElementById('closeTeacher')?.addEventListener('click', closeTeacherPanel);

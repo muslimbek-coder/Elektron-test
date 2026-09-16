@@ -62,8 +62,54 @@ CREATE TABLE IF NOT EXISTS user_stats (
   PRIMARY KEY (display_name, mode)
 );
 
+CREATE TABLE IF NOT EXISTS classes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  grade INTEGER NOT NULL,
+  teacher_username TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS class_members (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  class_id INTEGER NOT NULL,
+  username TEXT NOT NULL,
+  role TEXT DEFAULT 'student',
+  child_username TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(class_id, username)
+);
+
+CREATE TABLE IF NOT EXISTS class_tests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  class_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  subject TEXT,
+  teacher_username TEXT NOT NULL,
+  questions TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS class_results (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  class_id INTEGER NOT NULL,
+  test_id TEXT,
+  username TEXT NOT NULL,
+  score INTEGER DEFAULT 0,
+  total INTEGER DEFAULT 0,
+  correct INTEGER DEFAULT 0,
+  pct INTEGER DEFAULT 0,
+  subjects TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_results_mode ON results(mode);
 CREATE INDEX IF NOT EXISTS idx_stats_mode_score ON user_stats(mode, best_score DESC);
+CREATE INDEX IF NOT EXISTS idx_classes_teacher ON classes(teacher_username);
+CREATE INDEX IF NOT EXISTS idx_members_class ON class_members(class_id);
+CREATE INDEX IF NOT EXISTS idx_tests_class ON class_tests(class_id);
+CREATE INDEX IF NOT EXISTS idx_results_class ON class_results(class_id);
 `);
 
 module.exports = db;

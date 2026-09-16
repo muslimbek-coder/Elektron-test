@@ -5,6 +5,7 @@ const config = require('./config');
 const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
 const leaderboardRoutes = require('./routes/leaderboard.routes');
+const classesRoutes = require('./routes/classes.routes');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISO
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api', classesRoutes);
 app.use('/api', leaderboardRoutes); // /api/results, /api/leaderboard/:mode, /api/achievements/:name
 
 app.use((req, res) => res.status(404).json({ error: 'Topilmadi.' }));
