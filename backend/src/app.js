@@ -1,0 +1,28 @@
+const express = require('express');
+const cors = require('cors');
+const config = require('./config');
+
+const authRoutes = require('./routes/auth.routes');
+const usersRoutes = require('./routes/users.routes');
+const leaderboardRoutes = require('./routes/leaderboard.routes');
+
+const app = express();
+
+app.use(cors({ origin: config.corsOrigins, credentials: true }));
+app.use(express.json({ limit: '2mb' })); // 2mb -> avatar rasm data-url uchun
+
+app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api', leaderboardRoutes); // /api/results, /api/leaderboard/:mode, /api/achievements/:name
+
+app.use((req, res) => res.status(404).json({ error: 'Topilmadi.' }));
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Serverda kutilmagan xatolik.' });
+});
+
+module.exports = app;

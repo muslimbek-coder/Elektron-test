@@ -1,0 +1,159 @@
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const db = require('../db');
+const { signToken } = require('../utils/jwt');
+const { requireAuth } = require('../middleware/auth');
+
+const router = express.Router();
+
+function publicUser(u) {
+  if (!u) return null;
+  const { password_hash, ...rest } = u;
+  return rest;
+}
+
+function findByUsername(username) {
+  return db.prepare('SELECT * FROM users WHERE username = ? COLLATE NOCASE').get(username);
+}
+
+router.post('/register', async (req, res) => {
+  try {
+    const {
+      username, password, firstName, lastName,
+      role, country, region, city, bio,
+      birthDay, birthMonth, birthYear,
+    } = req.body || {};
+
+    if (!username || !password || !firstName || !lastName) {
+      return res.status(400).json({ error: "Ism, familiya, username va parolni to'ldiring." });
+    }
+    if (String(username).trim().length < 3) {
+      return res.status(400).json({ error: "Username kamida 3 belgidan iborat bo'lsin." });
+    }
+    if (String(password).length < 4) {
+      return res.status(400).json({ error: "Parol kamida 4 belgidan iborat bo'lsin." });
+    }
+    if (findByUsername(username.trim())) {
+      return res.status(409).json({ error: 'Bu username allaqachon mavjud!' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const info = db.prepare(`
+      INSERT INTO users (username, password_hash, first_name, last_name, role, country, region, city, bio, birth_day, birth_month, birth_year)
+      VALUES (@username, @passwordHash, @firstName, @lastName, @role, @country, @region, @city, @bio, @birthDay, @birthMonth, @birthYear)
+    `).run({
+      username: username.trim(),
+      passwordHash,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      role: role || 'student',
+      country: country || null,
+      region: region || null,
+      city: city || null,
+      bio: bio || null,
+      birthDay: birthDay || null,
+      birthMonth: birthMonth || null,
+      birthYear: birthYear || null,
+    });
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+    const token = signToken(user);
+    res.status(201).json({ token, user: publicUser(user) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverda xatolik yuz berdi.' });
+  }
+});
+
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username va parolni kiriting.' });
+    }
+    const user = findByUsername(username.trim());
+    if (!user) return res.status(401).json({ error: "Username yoki parol noto'g'ri!" });
+
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) return res.status(401).json({ error: "Username yoki parol noto'g'ri!" });
+
+    const token = signToken(user);
+    res.json({ token, user: publicUser(user) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverda xatolik yuz berdi.' });
+  }
+});
+
+router.get('/me', requireAuth, (req, res) => {
+  res.json({ user: publicUser(req.user) });
+});
+
+router.put('/me', requireAuth, async (req, res) => {
+  try {
+    const {
+      firstName, lastName, username, country, region, city, bio,
+      birthDay, birthMonth, birthYear, oldPassword, newPassword, avatarDataUrl,
+    } = req.body || {};
+
+    if (!firstName || !lastName || !username || !country || !region || !city) {
+      return res.status(400).json({ error: "Ism, familiya, username va hududni to'ldiring." });
+    }
+    if (String(username).trim().length < 3) {
+      return res.status(400).json({ error: "Username kamida 3 belgidan iborat bo'lsin." });
+    }
+
+    const existing = findByUsername(username.trim());
+    if (existing && existing.id !== req.user.id) {
+      return res.status(409).json({ error: 'Bu username band.' });
+    }
+
+    let passwordHash = req.user.password_hash;
+    if (newPassword) {
+      const ok = oldPassword && await bcrypt.compare(oldPassword, req.user.password_hash);
+      if (!ok) return res.status(400).json({ error: "Joriy parol noto'g'ri." });
+      if (String(newPassword).length < 4) {
+        return res.status(400).json({ error: "Yangi parol kamida 4 belgi bo'lsin." });
+      }
+      passwordHash = await bcrypt.hash(newPassword, 10);
+    }
+
+    db.prepare(`
+      UPDATE users SET
+        first_name=@firstName, last_name=@lastName, username=@username,
+        country=@country, region=@region, city=@city, bio=@bio,
+        birth_day=@birthDay, birth_month=@birthMonth, birth_year=@birthYear,
+        password_hash=@passwordHash,
+        avatar_data_url = COALESCE(@avatarDataUrl, avatar_data_url)
+      WHERE id=@id
+    `).run({
+      id: req.user.id,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      username: username.trim(),
+      country, region, city,
+      bio: bio || null,
+      birthDay: birthDay || null,
+      birthMonth: birthMonth || null,
+      birthYear: birthYear || null,
+      passwordHash,
+      avatarDataUrl: avatarDataUrl || null,
+    });
+
+    // Foydalanuvchi nomi o'zgargan bo'lsa, eski statistikalarini yangi nomga ko'chiramiz
+    if (username.trim().toLowerCase() !== req.user.username.toLowerCase()) {
+      db.prepare('UPDATE results SET username=@u, display_name=@u WHERE username=@old')
+        .run({ u: username.trim(), old: req.user.username });
+      db.prepare('UPDATE user_stats SET display_name=@u WHERE display_name=@old')
+        .run({ u: username.trim(), old: req.user.username });
+    }
+
+    const updated = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+    res.json({ user: publicUser(updated) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverda xatolik yuz berdi.' });
+  }
+});
+
+module.exports = router;
