@@ -41,6 +41,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@500;700&family=Caveat:wght@600;700&family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  window.BILIM_DUELI_BACKEND_URL = window.BILIM_DUELI_BACKEND_URL || 'https://bilim-dueli-backend.vercel.app';
+</script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="frontend-integration/api-client.js"></script>
 <style>
   :root{
     --bg:#0a0c16;
@@ -9302,13 +9307,44 @@ function renderNewAchvToast(results){
   }
 }
 
-function openLeaderboard(){
+async function openLeaderboard(mode = gameMode || 'solo') {
+  const container = document.getElementById('leaderboardList');
+  if (!container) return;
+
+  try {
+    if (window.BilimDueliAPI && window.BilimDueliAPI.Results) {
+      const data = await window.BilimDueliAPI.Results.top(mode, 10);
+      const list = Array.isArray(data) ? data : [];
+      if (list.length === 0) {
+        container.innerHTML = '<p class="lb-empty">Hali hech kim o\'ynamagan. Birinchi bo\'ling!</p>';
+      } else {
+        container.innerHTML = list.map((p, i) => `
+          <div class="lb-row">
+            <div class="lb-rank">${p.rank || i + 1}</div>
+            <div class="lb-info">
+              <div class="lb-name">${escapeHtml(p.name)}</div>
+              <div class="lb-meta">${p.wins || 0} g'alaba · ${p.games || 0} o'yin · Combo ${p.bestCombo || 0}${p.bestSurvival ? ' · Omon ' + p.bestSurvival : ''}</div>
+            </div>
+            <div class="lb-score">${p.bestScore || p.best_score || 0}</div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('leaderboardOverlay').classList.add('open');
+      const me = await window.BilimDueliAPI.Results.myRank(mode, getCurrentUser() || (p1 && p1.name) || '');
+      if (me && me.found && document.getElementById('leaderboardMyRow')) {
+        document.getElementById('leaderboardMyRow').innerHTML = `Mening o'rnim: #${me.rank} · ${me.stats.best_score || 0} ball`;
+      }
+      return;
+    }
+  } catch (e) {
+    console.error('Leaderboard backend xatosi:', e);
+  }
+
   const data = loadLeaderboard();
   const list = Object.entries(data)
     .map(([name, s]) => ({ name, ...s }))
     .sort((a, b) => b.bestScore - a.bestScore)
     .slice(0, 10);
-  const container = document.getElementById('leaderboardList');
   if(list.length === 0){
     container.innerHTML = '<p class="lb-empty">Hali hech kim o\'ynamagan. Birinchi bo\'ling!</p>';
   } else {
@@ -9334,12 +9370,27 @@ function endGame() {
   p1.pct = p1.total > 0 ? Math.round((p1.correct / p1.total) * 100) : 0;
   p2.pct = p2.total > 0 ? Math.round((p2.correct / p2.total) * 100) : 0;
 
-  // Reytingga saqlash (Natijalarni localStorage ga yozish)
+  // Reytingga saqlash (lokal + backend)
   if (p1.name) {
     saveLeaderboardScore(p1.name, p1.score, p1.total);
   }
   if (gameMode === 'pvp' && p2.name) {
     saveLeaderboardScore(p2.name, p2.score, p2.total);
+  }
+  if (window.BilimDueliAPI && window.BilimDueliAPI.Results) {
+    const resultPayload = {
+      mode: gameMode,
+      grade: grade || null,
+      subject: selectedSubject || null,
+      score: p1.score,
+      total: p1.total,
+      correct: p1.correct,
+      maxCombo: p1.maxCombo,
+      survivalBest: p1.survivalBest,
+      won: p1.score >= (p2 ? p2.score : 0),
+      guestName: p1.name || (getCurrentUser() || 'O\'yinchi')
+    };
+    window.BilimDueliAPI.Results.submit(resultPayload).catch((err) => console.error('Backend result save error:', err));
   }
 
   // Natijalar matnini ekranga chiqarish
@@ -9725,6 +9776,8 @@ async function hashPassword(password) {
 }
 function getUserRecord(username) {
   if (!username) return null;
+  const backendUser = currentUserCache && currentUserCache.username && currentUserCache.username.toLowerCase() === String(username).toLowerCase() ? currentUserCache : null;
+  if (backendUser) return backendUser;
   return getUsers().find(u => u.username.toLowerCase() === username.toLowerCase()) || null;
 }
 
@@ -9735,7 +9788,31 @@ function getUsers() {
   } catch (e) { return []; }
 }
 
+let currentUserCache = null;
+
+async function refreshCurrentUser() {
+  try {
+    if (!window.BilimDueliAPI || !window.BilimDueliAPI.Auth || !window.BilimDueliAPI.Auth.me) {
+      currentUserCache = null;
+      return null;
+    }
+    const user = await window.BilimDueliAPI.Auth.me();
+    currentUserCache = user;
+    if (user && user.username) {
+      localStorage.setItem(CURRENT_USER_KEY, user.username);
+    } else {
+      localStorage.removeItem(CURRENT_USER_KEY);
+    }
+    return user;
+  } catch (e) {
+    currentUserCache = null;
+    localStorage.removeItem(CURRENT_USER_KEY);
+    return null;
+  }
+}
+
 function getCurrentUser() {
+  if (currentUserCache && currentUserCache.username) return currentUserCache.username;
   return localStorage.getItem(CURRENT_USER_KEY) || null;
 }
 
@@ -9784,6 +9861,13 @@ async function handleRegister(e) {
   const lastName = document.getElementById('regLastName').value.trim();
   const username = document.getElementById('regUsername').value.trim();
   const password = document.getElementById('regPassword').value;
+  const country = document.getElementById('regCountry')?.value || 'O\'zbekiston';
+  const region = document.getElementById('regRegion')?.value || '';
+  const city = document.getElementById('regCity')?.value.trim() || '';
+  const bio = document.getElementById('regBio')?.value.trim() || '';
+  const birthDay = document.getElementById('regBirthDay')?.value || null;
+  const birthMonth = document.getElementById('regBirthMonth')?.value || null;
+  const birthYear = document.getElementById('regBirthYear')?.value || null;
 
   if (!firstName || !lastName || !username || !password) {
     showAuthError("Ism, username va parolni to'ldiring!");
@@ -9791,6 +9875,24 @@ async function handleRegister(e) {
   }
   if (username.length < 3) {
     showAuthError("Username kamida 3 belgidan iborat bo'lsin.");
+    return;
+  }
+
+  try {
+    if (window.BilimDueliAPI && window.BilimDueliAPI.Auth) {
+      const user = await window.BilimDueliAPI.Auth.register({
+        username, password, firstName, lastName,
+        role: document.getElementById('regRole')?.value || 'student',
+        country, region, city, bio, birthDay, birthMonth, birthYear
+      });
+      currentUserCache = user;
+      localStorage.setItem(CURRENT_USER_KEY, user.username);
+      updateUserUI();
+      closeAuthModal();
+      return;
+    }
+  } catch (err) {
+    showAuthError(err.message || 'Ro\'yxatdan o\'tishda xatolik yuz berdi.');
     return;
   }
 
@@ -9807,7 +9909,8 @@ async function handleRegister(e) {
   }
   users.push({
     username, passwordHash, firstName, lastName,
-    role: document.getElementById('regRole')?.value || 'student'
+    role: document.getElementById('regRole')?.value || 'student',
+    country, region, city, bio, birthDay, birthMonth, birthYear
   });
   saveUsers(users);
   localStorage.setItem(CURRENT_USER_KEY, username);
@@ -9819,6 +9922,20 @@ async function handleLogin(e) {
   e.preventDefault();
   const username = document.getElementById('loginUsername').value.trim();
   const password = document.getElementById('loginPassword').value;
+
+  try {
+    if (window.BilimDueliAPI && window.BilimDueliAPI.Auth) {
+      const user = await window.BilimDueliAPI.Auth.login({ username, password });
+      currentUserCache = user;
+      localStorage.setItem(CURRENT_USER_KEY, user.username);
+      updateUserUI();
+      closeAuthModal();
+      return;
+    }
+  } catch (err) {
+    showAuthError(err.message || "Username yoki parol noto'g'ri!");
+    return;
+  }
 
   let users = getUsers();
   let passwordHash;
@@ -9848,6 +9965,41 @@ async function handleProfileSave(e) {
   const currentName = getCurrentUser();
   if (!currentName) return;
   const msg = document.getElementById('profileMsg');
+
+  try {
+    if (window.BilimDueliAPI && window.BilimDueliAPI.Auth) {
+      const user = await window.BilimDueliAPI.Auth.updateProfile({
+        firstName: document.getElementById('profFirstName').value.trim(),
+        lastName: document.getElementById('profLastName').value.trim(),
+        username: document.getElementById('profUsername').value.trim(),
+        country: document.getElementById('profCountry').value,
+        region: document.getElementById('profRegion').value,
+        city: document.getElementById('profCity').value.trim(),
+        bio: document.getElementById('profBio').value.trim(),
+        birthDay: document.getElementById('profBirthDay').value,
+        birthMonth: document.getElementById('profBirthMonth').value,
+        birthYear: document.getElementById('profBirthYear').value,
+        oldPassword: document.getElementById('profOldPassword').value,
+        newPassword: document.getElementById('profNewPassword').value
+      });
+      currentUserCache = user;
+      localStorage.setItem(CURRENT_USER_KEY, user.username);
+      updateUserUI();
+      applyAvatarToEl(document.getElementById('profileAvatarBig'), user.username, (user.firstName || user.username).charAt(0).toUpperCase());
+      const meta = document.getElementById('profileMeta');
+      if (meta) meta.textContent = [user.city, user.region, user.country].filter(Boolean).join(' • ');
+      document.getElementById('profOldPassword').value = '';
+      document.getElementById('profNewPassword').value = '';
+      msg.textContent = "Profil muvaffaqiyatli yangilandi!";
+      msg.classList.remove('err');
+      return;
+    }
+  } catch (err) {
+    msg.textContent = err.message || 'Profilni yangilashda xatolik yuz berdi.';
+    msg.classList.add('err');
+    return;
+  }
+
   const users = getUsers();
   const idx = users.findIndex(u => u.username.toLowerCase() === currentName.toLowerCase());
   if (idx < 0) {
@@ -9955,6 +10107,10 @@ function closeAuthModal() {
 }
 
 function logout() {
+  if (window.BilimDueliAPI && window.BilimDueliAPI.Auth) {
+    window.BilimDueliAPI.Auth.logout();
+  }
+  currentUserCache = null;
   localStorage.removeItem(CURRENT_USER_KEY);
   updateUserUI();
   showFxToast("Mehmon rejimida davom etishingiz mumkin", 'var(--gold)');
@@ -9977,12 +10133,15 @@ function updateUserUI() {
   const playerInput = document.getElementById('p1name');
 
   if (user) {
-    if (label) label.textContent = rec ? (rec.username) : user;
-    if (avatar) applyAvatarToEl(avatar, user, (rec?.firstName || user).trim().charAt(0).toUpperCase() || '?');
+    if (label) label.textContent = rec ? (rec.username || user) : user;
+    if (avatar) {
+      const initial = (rec && (rec.firstName || rec.lastName || rec.username)) || user;
+      applyAvatarToEl(avatar, user, String(initial).trim().charAt(0).toUpperCase() || '?');
+    }
     if (openBtn) openBtn.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'inline-block';
     if (profileBtn) profileBtn.style.display = 'inline-block';
-    if (playerInput) playerInput.value = rec?.firstName || user;
+    if (playerInput) playerInput.value = rec && (rec.firstName || rec.username) ? (rec.firstName || rec.username) : user;
   } else {
     if (label) label.textContent = t('guest');
     if (avatar) { avatar.style.backgroundImage = 'none'; avatar.textContent = '?'; }
@@ -10001,7 +10160,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('profCountry')?.addEventListener('change', (e) => {
     fillRegionSelect(document.getElementById('profRegion'), e.target.value);
   });
-  updateUserUI();
+  refreshCurrentUser().finally(() => updateUserUI());
   applyDeepLinkFromURL();
 });
 

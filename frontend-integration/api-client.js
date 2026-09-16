@@ -12,7 +12,10 @@
  */
 (function () {
   // ==== 1) SOZLAMA: backend manzilini shu yerga yozing ====
-  const BACKEND_URL = 'https://SIZNING-BACKEND-MANZILINGIZ.onrender.com';
+  // Prod URL (Vercel deploy): https://bilim-dueli-backend.vercel.app
+  // Istalgan vaqtda browserdan o'zgartirish uchun global o'zgaruvchidan ham foydalanish mumkin:
+  // window.BILIM_DUELI_BACKEND_URL = 'https://your-backend.example.com';
+  const BACKEND_URL = (window.BILIM_DUELI_BACKEND_URL || 'https://bilim-dueli-backend.vercel.app').replace(/\/$/, '');
 
   const TOKEN_KEY = 'bilimDueliToken';
 
