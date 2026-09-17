@@ -8593,12 +8593,7 @@ for(let g=1; g<=11; g++){
     document.querySelectorAll('.grade-chip[data-grade]').forEach(c=>c.classList.remove('active'));
     chip.classList.add('active');
     grade = g;
-    if (gameMode === 'solo') {
-      selectedSubject = null;
-      document.getElementById('subjectSection').style.display = 'none';
-    } else {
       buildSubjectGrid(g);
-    }
   });
   gradeGrid.appendChild(chip);
 }
@@ -8745,12 +8740,7 @@ function refreshSetupUI() {
     if (playersRow) playersRow.style.gridTemplateColumns = hideP2 ? '1fr' : '1fr auto 1fr';
   }
 
-  if (gameMode === 'solo' && grade) {
-    selectedSubject = null;
-    document.getElementById('subjectSection').style.display = 'none';
-  } else if (grade) {
-    buildSubjectGrid(grade);
-  }
+  if (grade) buildSubjectGrid(grade);
 
   const labels = {
     pvp: t('startDuel'), bot: t('startDuel'), solo: t('startPractice'),
@@ -8827,7 +8817,9 @@ function buildGamePool() {
     return shuffle(JSON.parse(JSON.stringify(lastExamQuestions)));
   }
   if (gameMode === 'solo') {
-    const subjects = [...new Set(gradeQuestions.map(q => q.s))];
+    const subjects = selectedSubject
+      ? [selectedSubject]
+      : [...new Set(gradeQuestions.map(q => q.s))];
     let soloPool = [];
     subjects.forEach(subj => {
       const subjQs = shuffle(gradeQuestions.filter(q => q.s === subj).map(q => ({...q})));
@@ -9660,6 +9652,22 @@ function finishGame(){
   fxWinBurst();
   const p1Acc = p1.total > 0 ? Math.round((p1.correct / p1.total) * 100) : 0;
   const p2Acc = p2.total > 0 ? Math.round((p2.correct / p2.total) * 100) : 0;
+
+  if (gameMode === 'solo' && window.BilimDueliAPI?.Results) {
+    submitSoloResult({
+      mode: gameMode,
+      grade: grade || null,
+      subject: selectedSubject || null,
+      score: p1.score,
+      total: p1.total,
+      correct: p1.correct,
+      maxCombo: p1.maxCombo,
+      survivalBest: p1.survivalBest,
+      won: true,
+      guestName: p1.name || (getCurrentUser() || "O'yinchi"),
+    });
+  }
+
   const title = document.getElementById('resultTitle');
   const examRing = document.getElementById('examScoreRing');
   const retryBtn = document.getElementById('examRetryBtn');
