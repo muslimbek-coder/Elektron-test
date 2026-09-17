@@ -77,15 +77,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
-    const token = signToken(user);
-    res.status(201).json({ token, user: publicUser(user) });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Serverda xatolik yuz berdi.' });
-  }
-});
-
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
