@@ -3091,7 +3091,10 @@ function setUserRole(role){
   return true;
 }
 
-function openTeacherPanel(){
+async function openTeacherPanel(){
+  if (window.BilimDueliAPI?.Auth?.me && window.BilimDueliAPI.Auth.isLoggedIn()) {
+    await refreshCurrentUser();
+  }
   const current = getCurrentUser();
   if (!current) {
     openAuthModal({ tab: 'login' });
