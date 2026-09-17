@@ -14,7 +14,7 @@ services:
       - key: JWT_EXPIRES_IN
         value: 30d
       - key: TEACHER_INVITE_CODE
-        sync: false
+        value: Bilim2026Ustoz
       - key: CORS_ORIGIN
         sync: false
       - key: DB_PATH

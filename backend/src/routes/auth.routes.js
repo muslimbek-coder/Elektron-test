@@ -39,11 +39,15 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Bu username allaqachon mavjud!' });
     }
 
+    const requestedRole = String(role || 'student').trim().toLowerCase();
+    const submittedTeacherCode = String(teacherCode || '').trim();
+    const configuredTeacherCode = String(config.teacherInviteCode || '').trim();
+
     let finalRole = 'student';
-    if (role === 'parent') {
+    if (requestedRole === 'parent') {
       finalRole = 'parent';
-    } else if (role === 'teacher') {
-      if (!teacherCode || teacherCode !== config.teacherInviteCode) {
+    } else if (requestedRole === 'teacher') {
+      if (!submittedTeacherCode || submittedTeacherCode !== configuredTeacherCode) {
         return res.status(403).json({ error: "O'qituvchi kodi noto'g'ri." });
       }
       finalRole = 'teacher';
