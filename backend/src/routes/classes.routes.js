@@ -243,7 +243,7 @@ router.get('/classes/:classId/tests', requireAuth, (req, res) => {
     res.json({ tests: rows.map(testShape) });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Sinf testlarini olishda xatolik yuz berdi.' });
+    res.status(500).json({ error: 'Testlarni olishda xatolik yuz berdi.' });
   }
 });
 

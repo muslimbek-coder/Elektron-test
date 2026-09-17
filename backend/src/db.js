@@ -78,7 +78,8 @@ CREATE TABLE IF NOT EXISTS class_members (
   role TEXT DEFAULT 'student',
   child_username TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  UNIQUE(class_id, username)
+  UNIQUE(class_id, username),
+  FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS class_tests (
@@ -88,7 +89,8 @@ CREATE TABLE IF NOT EXISTS class_tests (
   subject TEXT,
   teacher_username TEXT NOT NULL,
   questions TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS class_results (
@@ -101,7 +103,8 @@ CREATE TABLE IF NOT EXISTS class_results (
   correct INTEGER DEFAULT 0,
   pct INTEGER DEFAULT 0,
   subjects TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_results_mode ON results(mode);

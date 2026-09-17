@@ -3976,6 +3976,10 @@ document.getElementById('avatarFileInput')?.addEventListener('change', (e) => {
         applyAvatarToEl(document.getElementById('userAvatar'), user, user.charAt(0).toUpperCase());
         msg.textContent = 'Profil rasmi yangilandi!';
         msg.classList.remove('err');
+
+        if (window.BilimDueliAPI?.Auth?.isLoggedIn?.()) {
+          window.BilimDueliAPI.Auth.updateProfile({ avatarDataUrl: dataUrl }).catch(() => {});
+        }
       } else {
         msg.textContent = "Rasmni saqlab bo'lmadi (xotira to'lgan bo'lishi mumkin).";
         msg.classList.add('err');

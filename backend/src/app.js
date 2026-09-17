@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const config = require('./config');
 
+const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
 const leaderboardRoutes = require('./routes/leaderboard.routes');
@@ -13,6 +14,14 @@ app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(express.json({ limit: '2mb' })); // 2mb -> avatar rasm data-url uchun
 
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: "Juda ko'p urinish. 15 daqiqadan keyin qayta urinib ko'ring." },
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
@@ -27,4 +36,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Serverda kutilmagan xatolik.' });
 });
 
-module.exports = app;
+const newLocal = module.exports = app;

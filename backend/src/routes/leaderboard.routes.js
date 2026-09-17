@@ -51,13 +51,14 @@ router.post('/results', optionalAuth, (req, res) => {
     }
 
     const displayName = req.user ? req.user.username : sanitizeName(guestName);
-    if (!req.user) {
-  const clash = db.prepare('SELECT 1 FROM users WHERE username = ? COLLATE NOCASE').get(displayName);
-  if (clash) {
-    return res.status(409).json({ error: 'Bu ism band — ro\'yxatdan o\'tgan foydalanuvchi nomi bilan mehmon sifatida o\'ynab bo\'lmaydi.' });
-  }
-}
     const isGuest = req.user ? 0 : 1;
+
+    if (isGuest) {
+      const clash = db.prepare('SELECT 1 FROM users WHERE username = ? COLLATE NOCASE').get(displayName);
+      if (clash) {
+        return res.status(409).json({ error: 'Bu ism band — ro\'yxatdan o\'tgan foydalanuvchi nomi bilan mehmon sifatida o\'ynab bo\'lmaydi.' });
+      }
+    }
     const patch = { score: Number(score) || 0, total: Number(total) || 0, correct: Number(correct) || 0, maxCombo: Number(maxCombo) || 0, survivalBest: Number(survivalBest) || 0, won: !!won };
 
     db.prepare(`
@@ -96,14 +97,15 @@ router.get('/leaderboard/:mode', (req, res) => {
     return res.status(400).json({ error: `mode noto'g'ri.` });
   }
   const limit = Math.min(parseInt(req.query.limit, 10) || 10, 100);
+  const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
   const rows = db.prepare(`
     SELECT display_name as name, games, wins, best_score as bestScore, best_combo as bestCombo,
            best_survival as bestSurvival, perfect_games as perfectGames, achievements
-    FROM user_stats WHERE mode=? ORDER BY best_score DESC, wins DESC LIMIT ?
-  `).all(mode, limit);
+    FROM user_stats WHERE mode=? ORDER BY best_score DESC, wins DESC LIMIT ? OFFSET ?
+  `).all(mode, limit, offset);
   res.json({
     mode,
-    list: rows.map((r, i) => ({ rank: i + 1, ...r, achievements: JSON.parse(r.achievements || '[]') })),
+    list: rows.map((r, i) => ({ rank: offset + i + 1, ...r, achievements: JSON.parse(r.achievements || '[]') })),
   });
 });
 
