@@ -2408,11 +2408,15 @@
         </div>
         <div class="auth-field">
           <label data-i18n="labelRole">Rol</label>
-          <select id="regRole" required>
+          <select id="regRole" required onchange="document.getElementById('teacherCodeField').style.display = (this.value === 'teacher') ? 'block' : 'none';">
             <option value="student" data-i18n="roleStudent">O'quvchi</option>
             <option value="teacher" data-i18n="roleTeacher">O'qituvchi</option>
             <option value="parent" data-i18n="roleParent">Ota-ona</option>
           </select>
+        </div>
+        <div class="auth-field" id="teacherCodeField" style="display:none;">
+          <label>O'qituvchi kodi</label>
+          <input type="text" id="regTeacherCode" placeholder="Sizga berilgan maxfiy kod">
         </div>
         <div class="auth-field">
           <label data-i18n="labelUsername">Username</label>
@@ -10112,9 +10116,10 @@ async function handleRegister(e) {
 
   try {
     if (window.BilimDueliAPI && window.BilimDueliAPI.Auth) {
-      const user = await window.BilimDueliAPI.Auth.register({
+const user = await window.BilimDueliAPI.Auth.register({
         username, password, firstName, lastName,
         role: document.getElementById('regRole')?.value || 'student',
+        teacherCode: document.getElementById('regTeacherCode')?.value || '',
         country, region, city, bio, birthDay, birthMonth, birthYear
       });
       currentUserCache = user;

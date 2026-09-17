@@ -22,14 +22,22 @@ router.post('/register', async (req, res) => {
       username, password, firstName, lastName,
       role, country, region, city, bio,
       birthDay, birthMonth, birthYear,
+      teacherCode, // YANGI
     } = req.body || {};
 
     if (!username || !password || !firstName || !lastName) {
       return res.status(400).json({ error: "Ism, familiya, username va parolni to'ldiring." });
     }
 
-    const ALLOWED_ROLES = ['student', 'parent']; // 'teacher' bu yerdan berilmaydi
-    const finalRole = ALLOWED_ROLES.includes(role) ? role : 'student';
+    let finalRole = 'student';
+    if (role === 'parent') {
+      finalRole = 'parent';
+    } else if (role === 'teacher') {
+      if (!teacherCode || teacherCode !== config.teacherInviteCode) {
+        return res.status(403).json({ error: "O'qituvchi kodi noto'g'ri." });
+      }
+      finalRole = 'teacher';
+    }
 
     if (String(username).trim().length < 3) {
       return res.status(400).json({ error: "Username kamida 3 belgidan iborat bo'lsin." });

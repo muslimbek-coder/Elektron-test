@@ -9,6 +9,7 @@ module.exports = {
   port: parseInt(process.env.PORT || '4000', 10),
   corsOrigins: parseOrigins(process.env.CORS_ORIGIN),
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-me',
+  teacherInviteCode: process.env.TEACHER_INVITE_CODE || '',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '30d',
   dbPath: process.env.DB_PATH || './data/bilimdueli.db',
 };
