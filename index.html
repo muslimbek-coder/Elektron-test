@@ -9479,11 +9479,63 @@ function renderNewAchvToast(results){
   }
 }
 
+const SOLO_RESULT_QUEUE_KEY = 'bilimDueliSoloResultQueue';
+
+function getSoloResultQueue() {
+  try {
+    const value = JSON.parse(localStorage.getItem(SOLO_RESULT_QUEUE_KEY) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveSoloResultQueue(queue) {
+  try { localStorage.setItem(SOLO_RESULT_QUEUE_KEY, JSON.stringify(queue)); } catch (e) {}
+}
+
+async function submitSoloResult(payload) {
+  if (!window.BilimDueliAPI?.Results) {
+    const queue = getSoloResultQueue();
+    queue.push(payload);
+    saveSoloResultQueue(queue);
+    return false;
+  }
+
+  try {
+    await window.BilimDueliAPI.Results.submit(payload);
+    return true;
+  } catch (error) {
+    const queue = getSoloResultQueue();
+    queue.push(payload);
+    saveSoloResultQueue(queue);
+    console.error('Online yakka mashq natijasi saqlanmadi, qayta uriniladi:', error);
+    return false;
+  }
+}
+
+async function flushSoloResultQueue() {
+  const queue = getSoloResultQueue();
+  if (!queue.length || !window.BilimDueliAPI?.Results) return;
+
+  const remaining = [];
+  for (const payload of queue) {
+    try {
+      await window.BilimDueliAPI.Results.submit(payload);
+    } catch (error) {
+      remaining.push(payload);
+      console.error('Kutilayotgan online natijani saqlashda xato:', error);
+    }
+  }
+  saveSoloResultQueue(remaining);
+}
+
 async function openLeaderboard(mode = gameMode || 'solo') {
   const container = document.getElementById('leaderboardList');
   const onlineContainer = document.getElementById('onlineLeaderboardList');
   if (!container || !onlineContainer) return;
 
+  await flushSoloResultQueue();
   const list = getLeaderboard().slice(0, 10);
   if(list.length === 0){
     container.innerHTML = '<p class="lb-empty">Hali hech kim o\'ynamagan. Birinchi bo\'ling!</p>';
@@ -9552,7 +9604,7 @@ function endGame() {
       won: p1.score >= (p2 ? p2.score : 0),
       guestName: p1.name || (getCurrentUser() || 'O\'yinchi')
     };
-    window.BilimDueliAPI.Results.submit(resultPayload).catch((err) => console.error('Backend result save error:', err));
+    submitSoloResult(resultPayload);
   }
 
   // Natijalar matnini ekranga chiqarish
