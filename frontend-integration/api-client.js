@@ -47,10 +47,10 @@
 
   // ================= AUTH =================
   const Auth = {
-    async register({ username, password, firstName, lastName, role, country, region, city, bio, birthDay, birthMonth, birthYear }) {
+    async register({ username, password, firstName, lastName, role, teacherCode, country, region, city, bio, birthDay, birthMonth, birthYear }) {
       const data = await apiFetch('/api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ username, password, firstName, lastName, role, country, region, city, bio, birthDay, birthMonth, birthYear }),
+        body: JSON.stringify({ username, password, firstName, lastName, role, teacherCode, country, region, city, bio, birthDay, birthMonth, birthYear }),
       });
       setToken(data.token);
       return data.user;

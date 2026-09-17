@@ -3076,8 +3076,9 @@ function makeCode(){
   return s;
 }
 function currentUserRole(){
-  const rec = getUserRecord(getCurrentUser());
-  return rec && rec.role ? rec.role : 'student';
+  const rec = currentUserCache || getUserRecord(getCurrentUser());
+  const role = String(rec?.role || 'student').trim().toLowerCase();
+  return role === 'teacher' || role === "o'qituvchi" ? 'teacher' : role === 'parent' || role === 'ota-ona' ? 'parent' : 'student';
 }
 function setUserRole(role){
   const name = getCurrentUser();
