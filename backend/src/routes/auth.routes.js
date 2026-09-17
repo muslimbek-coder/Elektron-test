@@ -22,11 +22,20 @@ router.post('/register', async (req, res) => {
       username, password, firstName, lastName,
       role, country, region, city, bio,
       birthDay, birthMonth, birthYear,
-      teacherCode, // YANGI
+      teacherCode,
     } = req.body || {};
 
     if (!username || !password || !firstName || !lastName) {
       return res.status(400).json({ error: "Ism, familiya, username va parolni to'ldiring." });
+    }
+    if (String(username).trim().length < 3) {
+      return res.status(400).json({ error: "Username kamida 3 belgidan iborat bo'lsin." });
+    }
+    if (String(password).length < 4) {
+      return res.status(400).json({ error: "Parol kamida 4 belgidan iborat bo'lsin." });
+    }
+    if (findByUsername(username.trim())) {
+      return res.status(409).json({ error: 'Bu username allaqachon mavjud!' });
     }
 
     let finalRole = 'student';
@@ -39,34 +48,34 @@ router.post('/register', async (req, res) => {
       finalRole = 'teacher';
     }
 
-    if (String(username).trim().length < 3) {
-      return res.status(400).json({ error: "Username kamida 3 belgidan iborat bo'lsin." });
-    }
-    if (String(password).length < 4) {
-      return res.status(400).json({ error: "Parol kamida 4 belgidan iborat bo'lsin." });
-    }
-    if (findByUsername(username.trim())) {
-      return res.status(409).json({ error: 'Bu username allaqachon mavjud!' });
-    }
-
     const passwordHash = await bcrypt.hash(password, 10);
+
     const info = db.prepare(`
-      INSERT INTO users (username, password_hash, first_name, last_name, role, country, region, city, bio, birth_day, birth_month, birth_year)
-      VALUES (@username, @passwordHash, @firstName, @lastName, @role, @country, @region, @city, @bio, @birthDay, @birthMonth, @birthYear)
+      INSERT INTO users (username, password_hash, first_name, last_name, role, country, region, city, bio, birth_day, birth_month, birth_year, created_at)
+      VALUES (@username, @password_hash, @first_name, @last_name, @role, @country, @region, @city, @bio, @birth_day, @birth_month, @birth_year, datetime('now'))
     `).run({
       username: username.trim(),
-      passwordHash,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      role:finalRole,
+      password_hash: passwordHash,
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      role: finalRole,
       country: country || null,
       region: region || null,
       city: city || null,
       bio: bio || null,
-      birthDay: birthDay || null,
-      birthMonth: birthMonth || null,
-      birthYear: birthYear || null,
+      birth_day: birthDay || null,
+      birth_month: birthMonth || null,
+      birth_year: birthYear || null,
     });
+
+    const user = findByUsername(username.trim());
+    const token = signToken({ username: user.username });
+    res.json({ token, user: publicUser(user) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Ro'yxatdan o'tishda xatolik yuz berdi." });
+  }
+});
 
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
     const token = signToken(user);
