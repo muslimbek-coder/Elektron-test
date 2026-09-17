@@ -9834,7 +9834,17 @@ const LEADERBOARD_KEY = 'bilimDueliLeaderboard';
 function getLeaderboard() {
   try {
     const raw = localStorage.getItem(LEADERBOARD_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object') {
+      return Object.entries(parsed).map(([name, stats]) => ({
+        name,
+        score: Number(stats.bestScore) || 0,
+        total: Number(stats.games) || 0,
+        date: ''
+      })).sort((a, b) => b.score - a.score);
+    }
+    return [];
   } catch (e) {
     return [];
   }
