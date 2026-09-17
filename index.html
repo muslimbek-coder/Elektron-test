@@ -804,6 +804,12 @@
   .modal-box .modal-sub{ color:var(--chalk-dim); font-size:13px; margin:0 0 18px; }
   .modal-close{ position:absolute; top:16px; right:18px; background:none; border:none; color:var(--chalk-dim); font-size:22px; cursor:pointer; line-height:1; }
   .modal-close:hover{ color:var(--chalk); }
+  .leaderboard-modal{ max-width:980px; }
+  .leaderboard-columns{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+  .leaderboard-column{ min-width:0; }
+  .leaderboard-column h3{ margin:0 0 10px; font-size:16px; color:var(--p2); }
+  .leaderboard-column .modal-sub{ margin-bottom:12px; }
+  @media(max-width:700px){ .leaderboard-columns{ grid-template-columns:1fr; } }
 
   /* --- Auth (Kirish / Ro'yxatdan o'tish) modali --- */
   @keyframes authPop{
@@ -2076,11 +2082,21 @@
   </div>
 
   <div class="modal-overlay" id="leaderboardOverlay">
-    <div class="modal-box">
+    <div class="modal-box leaderboard-modal">
       <button class="modal-close" id="closeLeaderboard">&times;</button>
       <h2 data-i18n="lbTitle">🏆 Reyting</h2>
-      <p class="modal-sub" data-i18n="lbSub">Ushbu qurilmada saqlangan eng yaxshi natijalar</p>
-      <div id="leaderboardList"></div>
+      <div class="leaderboard-columns">
+        <section class="leaderboard-column">
+          <h3>Qurilma reytingi</h3>
+          <p class="modal-sub">Ushbu qurilmada saqlangan natijalar</p>
+          <div id="leaderboardList"></div>
+        </section>
+        <section class="leaderboard-column">
+          <h3>Online reyting</h3>
+          <p class="modal-sub">Faqat yakka mashq natijalari</p>
+          <div id="onlineLeaderboardList"></div>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -9465,42 +9481,10 @@ function renderNewAchvToast(results){
 
 async function openLeaderboard(mode = gameMode || 'solo') {
   const container = document.getElementById('leaderboardList');
-  if (!container) return;
+  const onlineContainer = document.getElementById('onlineLeaderboardList');
+  if (!container || !onlineContainer) return;
 
-  try {
-    if (window.BilimDueliAPI && window.BilimDueliAPI.Results) {
-      const data = await window.BilimDueliAPI.Results.top(mode, 10);
-      const list = Array.isArray(data) ? data : [];
-      if (list.length === 0) {
-        container.innerHTML = '<p class="lb-empty">Hali hech kim o\'ynamagan. Birinchi bo\'ling!</p>';
-      } else {
-        container.innerHTML = list.map((p, i) => `
-          <div class="lb-row">
-            <div class="lb-rank">${p.rank || i + 1}</div>
-            <div class="lb-info">
-              <div class="lb-name">${escapeHtml(p.name)}</div>
-              <div class="lb-meta">${p.wins || 0} g'alaba · ${p.games || 0} o'yin · Combo ${p.bestCombo || 0}${p.bestSurvival ? ' · Omon ' + p.bestSurvival : ''}</div>
-            </div>
-            <div class="lb-score">${p.bestScore || p.best_score || 0}</div>
-          </div>
-        `).join('');
-      }
-      document.getElementById('leaderboardOverlay').classList.add('open');
-      const me = await window.BilimDueliAPI.Results.myRank(mode, getCurrentUser() || (p1 && p1.name) || '');
-      if (me && me.found && document.getElementById('leaderboardMyRow')) {
-        document.getElementById('leaderboardMyRow').innerHTML = `Mening o'rnim: #${me.rank} · ${me.stats.best_score || 0} ball`;
-      }
-      return;
-    }
-  } catch (e) {
-    console.error('Leaderboard backend xatosi:', e);
-  }
-
-  const data = loadLeaderboard();
-  const list = Object.entries(data)
-    .map(([name, s]) => ({ name, ...s }))
-    .sort((a, b) => b.bestScore - a.bestScore)
-    .slice(0, 10);
+  const list = getLeaderboard().slice(0, 10);
   if(list.length === 0){
     container.innerHTML = '<p class="lb-empty">Hali hech kim o\'ynamagan. Birinchi bo\'ling!</p>';
   } else {
@@ -9509,11 +9493,33 @@ async function openLeaderboard(mode = gameMode || 'solo') {
         <div class="lb-rank">${i + 1}</div>
         <div class="lb-info">
           <div class="lb-name">${escapeHtml(p.name)}</div>
-          <div class="lb-meta">${p.wins} g'alaba · ${p.games} o'yin · Combo ${p.bestCombo}${p.bestSurvival ? ' · Omon ' + p.bestSurvival : ''}</div>
+          <div class="lb-meta">${p.date} · ${p.total || 0} ta savol</div>
         </div>
-        <div class="lb-score">${p.bestScore}</div>
+        <div class="lb-score">${p.score || 0}</div>
       </div>
     `).join('');
+  }
+
+  onlineContainer.innerHTML = '<p class="lb-empty">Online reyting yuklanmoqda...</p>';
+  if (window.BilimDueliAPI && window.BilimDueliAPI.Results) {
+    try {
+      const onlineList = await window.BilimDueliAPI.Results.top('solo', 10);
+      onlineContainer.innerHTML = onlineList.length ? onlineList.map((p, i) => `
+        <div class="lb-row">
+          <div class="lb-rank">${p.rank || i + 1}</div>
+          <div class="lb-info">
+            <div class="lb-name">${escapeHtml(p.name)}</div>
+            <div class="lb-meta">${p.games || 0} ta yakka mashq · Combo ${p.bestCombo || 0}</div>
+          </div>
+          <div class="lb-score">${p.bestScore || 0}</div>
+        </div>
+      `).join('') : '<p class="lb-empty">Hali online natija yo\'q.</p>';
+    } catch (e) {
+      console.error('Online leaderboard backend xatosi:', e);
+      onlineContainer.innerHTML = '<p class="lb-empty">Online reyting hozircha mavjud emas.</p>';
+    }
+  } else {
+    onlineContainer.innerHTML = '<p class="lb-empty">Online reyting uchun serverga ulaning.</p>';
   }
   document.getElementById('leaderboardOverlay').classList.add('open');
 }
@@ -9533,7 +9539,7 @@ function endGame() {
   if (gameMode === 'pvp' && p2.name) {
     saveLeaderboardScore(p2.name, p2.score, p2.total);
   }
-  if (window.BilimDueliAPI && window.BilimDueliAPI.Results) {
+  if (gameMode === 'solo' && window.BilimDueliAPI && window.BilimDueliAPI.Results) {
     const resultPayload = {
       mode: gameMode,
       grade: grade || null,
