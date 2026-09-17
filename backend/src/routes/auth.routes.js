@@ -27,6 +27,8 @@ router.post('/register', async (req, res) => {
     if (!username || !password || !firstName || !lastName) {
       return res.status(400).json({ error: "Ism, familiya, username va parolni to'ldiring." });
     }
+    const ALLOWED_ROLES = ['student', 'parent']; // 'teacher' bu yerdan yo'q qilinadi
+const finalRole = ALLOWED_ROLES.includes(role) ? role : 'student';finalRole
     if (String(username).trim().length < 3) {
       return res.status(400).json({ error: "Username kamida 3 belgidan iborat bo'lsin." });
     }
@@ -46,7 +48,7 @@ router.post('/register', async (req, res) => {
       passwordHash,
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      role: role || 'student',
+      role:finalRole,
       country: country || null,
       region: region || null,
       city: city || null,
@@ -142,11 +144,17 @@ router.put('/me', requireAuth, async (req, res) => {
 
     // Foydalanuvchi nomi o'zgargan bo'lsa, eski statistikalarini yangi nomga ko'chiramiz
     if (username.trim().toLowerCase() !== req.user.username.toLowerCase()) {
-      db.prepare('UPDATE results SET username=@u, display_name=@u WHERE username=@old')
-        .run({ u: username.trim(), old: req.user.username });
-      db.prepare('UPDATE user_stats SET display_name=@u WHERE display_name=@old')
-        .run({ u: username.trim(), old: req.user.username });
-    }
+  db.prepare('UPDATE results SET username=@u, display_name=@u WHERE username=@old')
+    .run({ u: username.trim(), old: req.user.username });
+  try {
+    db.prepare('UPDATE user_stats SET display_name=@u WHERE display_name=@old')
+      .run({ u: username.trim(), old: req.user.username });
+  } catch (e) {
+    // Yangi username bo'yicha statistika allaqachon mavjud (masalan mehmon sifatida) —
+    // eski statistikani o'chirib yuboramiz, mavjudini saqlab qolamiz.
+    db.prepare('DELETE FROM user_stats WHERE display_name=@old').run({ old: req.user.username });
+  }
+}
 
     const updated = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
     res.json({ user: publicUser(updated) });

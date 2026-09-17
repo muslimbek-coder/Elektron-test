@@ -51,6 +51,12 @@ router.post('/results', optionalAuth, (req, res) => {
     }
 
     const displayName = req.user ? req.user.username : sanitizeName(guestName);
+    if (!req.user) {
+  const clash = db.prepare('SELECT 1 FROM users WHERE username = ? COLLATE NOCASE').get(displayName);
+  if (clash) {
+    return res.status(409).json({ error: 'Bu ism band — ro\'yxatdan o\'tgan foydalanuvchi nomi bilan mehmon sifatida o\'ynab bo\'lmaydi.' });
+  }
+}
     const isGuest = req.user ? 0 : 1;
     const patch = { score: Number(score) || 0, total: Number(total) || 0, correct: Number(correct) || 0, maxCombo: Number(maxCombo) || 0, survivalBest: Number(survivalBest) || 0, won: !!won };
 
@@ -110,7 +116,10 @@ router.get('/leaderboard/:mode/me', optionalAuth, (req, res) => {
   const row = db.prepare('SELECT * FROM user_stats WHERE display_name=? COLLATE NOCASE AND mode=?').get(name, mode);
   if (!row) return res.json({ mode, name, found: false });
 
-  const better = db.prepare('SELECT COUNT(*) as c FROM user_stats WHERE mode=? AND best_score > ?').get(mode, row.best_score);
+  const better = db.prepare(`
+  SELECT COUNT(*) as c FROM user_stats
+  WHERE mode=? AND (best_score > ? OR (best_score = ? AND wins > ?))
+`).get(mode, row.best_score, row.best_score, row.wins);
   res.json({
     mode,
     found: true,

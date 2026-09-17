@@ -68,6 +68,7 @@ function attachSocketHandlers(io) {
         grade: me.grade,
         subject: me.subject,
         mode: me.mode,
+        questionCount,
         players: [
           { id: socket.id, name: me.name },
           { id: opponent.socket.id, name: opponent.name },
@@ -99,7 +100,19 @@ function attachSocketHandlers(io) {
       if (!room) return;
       const me = room.players.find((p) => p.id === socket.id);
       if (!me) return;
-      room.results[socket.id] = { name: me.name, score: score || 0, correct: correct || 0, total: total || 0, maxCombo: maxCombo || 0 };
+      // Clamp client-provided values before storing or comparing them.
+      const safeTotal = Math.min(Math.max(Number(total) || 0, 0), room.questionCount || 50);
+      const safeCorrect = Math.min(Math.max(Number(correct) || 0, 0), safeTotal);
+      const safeScore = Math.min(Math.max(Number(score) || 0, 0), safeTotal * 100);
+      const safeCombo = Math.min(Math.max(Number(maxCombo) || 0, 0), safeTotal);
+
+      room.results[socket.id] = {
+        name: me.name,
+        score: safeScore,
+        correct: safeCorrect,
+        total: safeTotal,
+        maxCombo: safeCombo,
+      };
       socket.to(roomId).emit('duel:opponentFinished', room.results[socket.id]);
 
       if (Object.keys(room.results).length === room.players.length) {

@@ -223,15 +223,27 @@ router.get('/parent/results/:childUsername', requireAuth, (req, res) => {
   }
 });
 
-router.get('/classes/:classId/tests', (req, res) => {
+router.get('/classes/:classId/tests', requireAuth, (req, res) => {
   try {
     const classId = Number(req.params.classId);
     if (!classId) return res.status(400).json({ error: 'classId noto\'g\'ri.' });
+
+    const cls = db.prepare('SELECT * FROM classes WHERE id = ?').get(classId);
+    if (!cls) return res.status(404).json({ error: 'Sinf topilmadi.' });
+
+    const isTeacher = cls.teacher_username.toLowerCase() === req.user.username.toLowerCase();
+    const isMember = db.prepare(
+      'SELECT 1 FROM class_members WHERE class_id=? AND username=? COLLATE NOCASE'
+    ).get(classId, req.user.username);
+    if (!isTeacher && !isMember) {
+      return res.status(403).json({ error: 'Bu sinf testlarini ko\'rishga ruxsat yo\'q.' });
+    }
+
     const rows = db.prepare('SELECT * FROM class_tests WHERE class_id = ? ORDER BY created_at DESC').all(classId);
     res.json({ tests: rows.map(testShape) });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Testlarni olishda xatolik yuz berdi.' });
+    res.status(500).json({ error: 'Sinf testlarini olishda xatolik yuz berdi.' });
   }
 });
 
@@ -305,6 +317,13 @@ router.post('/classes/:classId/results', requireAuth, (req, res) => {
     const classId = Number(req.params.classId);
     const { testId, score, total, correct, pct, subjects } = req.body || {};
     if (!classId) return res.status(400).json({ error: 'classId noto\'g\'ri.' });
+
+    const isMember = db.prepare(
+      'SELECT 1 FROM class_members WHERE class_id=? AND username=? COLLATE NOCASE'
+    ).get(classId, req.user.username);
+    if (!isMember) {
+      return res.status(403).json({ error: 'Siz bu sinf a\'zosi emassiz.' });
+    }
 
     const info = db.prepare(`
       INSERT INTO class_results (class_id, test_id, username, score, total, correct, pct, subjects)
