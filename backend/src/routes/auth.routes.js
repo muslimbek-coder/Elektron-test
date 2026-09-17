@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const config = require('../config');
 const { signToken } = require('../utils/jwt');
 const { requireAuth } = require('../middleware/auth');
 
@@ -69,7 +70,7 @@ router.post('/register', async (req, res) => {
     });
 
     const user = findByUsername(username.trim());
-    const token = signToken({ username: user.username });
+    const token = signToken(user);
     res.json({ token, user: publicUser(user) });
   } catch (error) {
     console.error(error);
