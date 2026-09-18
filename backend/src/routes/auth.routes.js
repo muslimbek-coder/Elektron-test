@@ -39,15 +39,18 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Bu username allaqachon mavjud!' });
     }
 
-    const requestedRole = String(role || 'student').trim().toLowerCase();
     let finalRole = 'student';
-    if (requestedRole === 'parent') {
+    if (role === 'parent') {
       finalRole = 'parent';
-    } else if (requestedRole === 'teacher') {
+    } else if (role === 'teacher') {
       const submitted = String(teacherCode || '').trim();
       const expected = String(config.teacherInviteCode || '').trim();
       if (!submitted || !expected || submitted !== expected) {
-        return res.status(403).json({ error: "O'qituvchi kodi noto'g'ri." });
+        return res.status(403).json({
+          error: "O'qituvchi kodi noto'g'ri.",
+          debug_submitted: submitted,
+          debug_expected: expected,
+        });
       }
       finalRole = 'teacher';
     }
