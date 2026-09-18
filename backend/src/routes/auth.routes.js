@@ -39,21 +39,17 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Bu username allaqachon mavjud!' });
     }
 
+    const requestedRole = String(role || 'student').trim().toLowerCase();
     let finalRole = 'student';
-    if (role === 'parent') {
+    if (requestedRole === 'parent') {
       finalRole = 'parent';
-    } else if (role === 'teacher') {
+    } else if (requestedRole === 'teacher') {
       const submitted = String(teacherCode || '').trim();
       const expected = String(config.teacherInviteCode || '').trim();
-      console.log('DEBUG teacherCode:', JSON.stringify(submitted), 'length:', submitted.length);
-      console.log('DEBUG expected:', JSON.stringify(expected), 'length:', expected.length);
       if (!submitted || !expected || submitted !== expected) {
-        return res.status(403).json({
-          error: "O'qituvchi kodi noto'g'ri.",
-          debug_submitted: submitted,
-          debug_expected: expected,
-        });
+        return res.status(403).json({ error: "O'qituvchi kodi noto'g'ri." });
       }
+      finalRole = 'teacher';
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -66,7 +62,7 @@ router.post('/register', async (req, res) => {
       password_hash: passwordHash,
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      role: 'student',
+      role: finalRole,
       country: country || null,
       region: region || null,
       city: city || null,
