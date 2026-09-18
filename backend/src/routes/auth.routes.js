@@ -66,7 +66,7 @@ router.post('/register', async (req, res) => {
       password_hash: passwordHash,
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      role: finalRole,
+      role: 'student',
       country: country || null,
       region: region || null,
       city: city || null,
