@@ -45,6 +45,8 @@ router.post('/register', async (req, res) => {
     } else if (role === 'teacher') {
       const submitted = String(teacherCode || '').trim();
       const expected = String(config.teacherInviteCode || '').trim();
+      console.log('DEBUG teacherCode:', JSON.stringify(submitted), 'length:', submitted.length);
+      console.log('DEBUG expected:', JSON.stringify(expected), 'length:', expected.length);
       if (!submitted || !expected || submitted !== expected) {
         return res.status(403).json({ error: "O'qituvchi kodi noto'g'ri." });
       }
