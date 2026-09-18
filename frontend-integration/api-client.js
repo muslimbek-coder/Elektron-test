@@ -128,10 +128,16 @@
     async tests(classId) {
       return apiFetch(`/api/classes/${encodeURIComponent(classId)}/tests`);
     },
-    async createTest(classId, { title, subject, questions }) {
+    async createTest(classId, { title, subject, questions, start, end }) {
       return apiFetch(`/api/classes/${encodeURIComponent(classId)}/tests`, {
         method: 'POST',
-        body: JSON.stringify({ title, subject, questions }),
+        body: JSON.stringify({
+          title,
+          subject,
+          questions,
+          start: start ? new Date(start).toISOString() : '',
+          end: end ? new Date(end).toISOString() : '',
+        }),
       });
     },
     async remove(classId) {

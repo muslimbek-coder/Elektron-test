@@ -59,8 +59,14 @@ function testShape(row) {
     subject: row.subject || 'Fan',
     teacherUsername: row.teacher_username,
     questions,
+    start: row.start_at || '',
+    end: row.end_at || '',
     createdAt: row.created_at,
   };
+}
+
+function removeExpiredTests(classId) {
+  db.prepare('DELETE FROM class_tests WHERE class_id = ? AND end_at IS NOT NULL AND end_at != ? AND datetime(end_at) <= datetime(\'now\', \'localtime\')').run(classId, '');
 }
 
 function randomCode() {
@@ -239,8 +245,10 @@ router.get('/classes/:classId/tests', requireAuth, (req, res) => {
       return res.status(403).json({ error: 'Bu sinf testlarini ko\'rishga ruxsat yo\'q.' });
     }
 
+    removeExpiredTests(classId);
     const rows = db.prepare('SELECT * FROM class_tests WHERE class_id = ? ORDER BY created_at DESC').all(classId);
-    res.json({ tests: rows.map(testShape) });
+    const tests = rows.map(testShape);
+    res.json({ tests: isTeacher ? tests : tests.filter((test) => !test.start || Number.isNaN(Date.parse(test.start)) || Date.parse(test.start) <= Date.now()) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Testlarni olishda xatolik yuz berdi.' });
@@ -250,7 +258,7 @@ router.get('/classes/:classId/tests', requireAuth, (req, res) => {
 router.post('/classes/:classId/tests', requireAuth, (req, res) => {
   try {
     const classId = Number(req.params.classId);
-    const { title, subject, questions } = req.body || {};
+    const { title, subject, questions, start, end } = req.body || {};
     if (!classId || !title || !Array.isArray(questions) || !questions.length) {
       return res.status(400).json({ error: 'Test ma\'lumotlari to\'liq emas.' });
     }
@@ -267,14 +275,16 @@ router.post('/classes/:classId/tests', requireAuth, (req, res) => {
     }
 
     const info = db.prepare(`
-      INSERT INTO class_tests (class_id, title, subject, teacher_username, questions)
-      VALUES (@classId, @title, @subject, @teacherUsername, @questions)
+      INSERT INTO class_tests (class_id, title, subject, teacher_username, questions, start_at, end_at)
+      VALUES (@classId, @title, @subject, @teacherUsername, @questions, @start, @end)
     `).run({
       classId,
       title: String(title).trim(),
       subject: String(subject || 'Fan').trim(),
       teacherUsername: req.user.username,
       questions: JSON.stringify(normalizedQuestions),
+      start: String(start || '').trim() || null,
+      end: String(end || '').trim() || null,
     });
 
     const row = db.prepare('SELECT * FROM class_tests WHERE id = ?').get(info.lastInsertRowid);

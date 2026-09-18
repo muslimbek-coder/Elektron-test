@@ -1968,10 +1968,12 @@
   .q-editor{
     position:relative;
     overflow:hidden;
+    padding:18px 18px 16px;
     border-style:solid;
-    border-color:rgba(33,230,193,.2);
-    background:linear-gradient(145deg, rgba(33,230,193,.06), rgba(255,122,61,.04));
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    border-color:rgba(33,230,193,.28);
+    border-radius:16px;
+    background:linear-gradient(145deg, rgba(22,29,53,.98), rgba(13,17,35,.98));
+    box-shadow:0 10px 24px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.06);
     animation:editorIn .42s cubic-bezier(.2,.9,.3,1.1) both;
     transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
   }
@@ -2005,11 +2007,11 @@
   }
   .q-remove:hover{ transform:rotate(8deg) scale(1.08); background:rgba(255,77,94,.16); border-color:var(--warn); }
   .q-label{ display:block; margin:0 0 6px; color:var(--chalk-dim); font-size:11px; font-weight:700; letter-spacing:.35px; text-transform:uppercase; }
-  .q-editor .q-text{ display:block; width:100%; resize:vertical; min-height:62px; margin-bottom:12px; }
+  .q-editor .q-text{ display:block; width:100%; resize:vertical; min-height:74px; margin-bottom:14px; background:rgba(5,9,24,.62); border-color:rgba(245,241,228,.2); line-height:1.5; }
   .q-option{ display:flex; align-items:center; gap:8px; min-width:0; }
   .q-option > span{ display:grid; place-items:center; width:26px; height:26px; flex:0 0 26px; border-radius:8px; background:var(--bg2); color:var(--p2); font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:12px; }
-  .q-option input{ min-width:0; flex:1; }
-  .q-footer-row{ display:grid; grid-template-columns:auto 72px 1fr; align-items:center; gap:9px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .q-option input{ min-width:0; flex:1; background:rgba(5,9,24,.62); border-color:rgba(245,241,228,.18); }
+  .q-footer-row{ display:grid; grid-template-columns:auto 72px minmax(0,1fr); align-items:center; gap:10px; margin-top:16px; padding-top:14px; border-top:1px solid rgba(245,241,228,.12); }
   .q-footer-row .q-label{ margin:0; }
   .q-footer-row .q-ans{ width:72px; }
   .q-footer-row .q-exp{ min-width:0; }
@@ -2020,6 +2022,10 @@
     background:linear-gradient(180deg,var(--p2),var(--gold),var(--p1));
   }
   .q-editor:hover{ transform:translateY(-3px); border-color:rgba(33,230,193,.5); box-shadow:0 12px 28px rgba(0,0,0,.16); }
+  .q-editor .q-ans{ background:rgba(5,9,24,.75); border-color:rgba(255,209,102,.38); color:var(--gold); font-weight:700; }
+  .q-editor .q-exp{ background:rgba(5,9,24,.62); border-color:rgba(245,241,228,.18); }
+  .q-editor .q-opt::placeholder, .q-editor .q-exp::placeholder, .q-editor .q-text::placeholder{ color:rgba(200,196,182,.58); }
+  .q-editor .q-opt:focus, .q-editor .q-exp:focus, .q-editor .q-text:focus, .q-editor .q-ans:focus{ background:rgba(6,25,37,.92); }
   .q-editor:nth-child(2){ animation-delay:.05s; }
   .q-editor:nth-child(3){ animation-delay:.1s; }
   .q-editor:nth-child(4){ animation-delay:.15s; }
@@ -2726,6 +2732,7 @@ const CRESULT_KEY = 'bilimDueliClassResults';
 const PROPOSAL_KEY = 'bilimDueliTestProposals';
 let currentLang = 'uz';
 let activeClassTest = null;
+let parentViewedChildUsername = '';
 try { currentLang = localStorage.getItem(LANG_KEY) || 'uz'; } catch (e) {}
 if (!['uz','ru','en'].includes(currentLang)) currentLang = 'uz';
 
@@ -3039,6 +3046,24 @@ function writeStore(key, val){
 }
 function getClasses(){ return readStore(CLASS_KEY, []); }
 function getClassTests(){ return readStore(TEST_KEY, []); }
+function testStartTime(test){
+  const value = String(test?.start || '').trim();
+  const time = value ? Date.parse(value) : NaN;
+  return Number.isNaN(time) ? null : time;
+}
+function testEndTime(test){
+  const value = String(test?.end || '').trim();
+  const time = value ? Date.parse(value) : NaN;
+  return Number.isNaN(time) ? null : time;
+}
+function isTestExpired(test, now = Date.now()){
+  const end = testEndTime(test);
+  return end !== null && end <= now;
+}
+function isTestActive(test, now = Date.now()){
+  const start = testStartTime(test);
+  return !isTestExpired(test, now) && (start === null || start <= now);
+}
 function getMembers(){ return readStore(MEMBER_KEY, []); }
 function getClassResults(){ return readStore(CRESULT_KEY, []); }
 function getTestProposals(){ return readStore(PROPOSAL_KEY, []); }
@@ -3094,6 +3119,7 @@ async function openTeacherPanel(){
   if (window.BilimDueliAPI?.Auth?.me && window.BilimDueliAPI.Auth.isLoggedIn()) {
     await refreshCurrentUser();
   }
+  await syncRemoteClasses();
   const current = getCurrentUser();
   if (!current) {
     openAuthModal({ tab: 'login' });
@@ -3116,7 +3142,7 @@ async function openTeacherPanel(){
   document.getElementById('classJoinBox')?.style.setProperty('display', isParent ? 'none' : '');
   const parentHint = document.getElementById('parentProposalHint');
   if (parentHint) parentHint.style.display = 'none';
-  fillTestQuestionEditors(Math.max(1, document.querySelectorAll('.q-editor').length || 2));
+  fillTestQuestionEditors(Math.max(1, document.querySelectorAll('.q-editor').length || 1));
   renderTeacherPanel();
 }
 function closeTeacherPanel(){ document.getElementById('teacherOverlay').classList.remove('open'); }
@@ -3254,17 +3280,17 @@ function getTeacherFilteredResults() {
   let rows = [...getClassResults()];
   const classId = document.getElementById('resultsClassSelect')?.value;
   const testId = document.getElementById('resultsTestSelect')?.value;
-  if (classId) rows = rows.filter(r => r.classId === classId);
-  if (testId) rows = rows.filter(r => r.testId === testId);
+  if (classId) rows = rows.filter(r => String(r.classId) === String(classId));
+  if (testId) rows = rows.filter(r => String(r.testId) === String(testId));
   if (role === 'parent' && user) {
     const links = getMembers().filter(m => m.username.toLowerCase() === user.toLowerCase() && m.role === 'parent');
-    const kids = links.map(m => (m.childUsername || '').toLowerCase()).filter(Boolean);
+    const kids = [...links.map(m => (m.childUsername || '').toLowerCase()), parentViewedChildUsername.toLowerCase()].filter(Boolean);
     rows = rows.filter(r => kids.includes((r.username || '').toLowerCase()));
   } else if (role !== 'teacher') {
     rows = rows.filter(r => user && r.username.toLowerCase() === user.toLowerCase());
   } else if (user) {
     const myClassIds = classes.filter(c => c.teacherUsername.toLowerCase() === user.toLowerCase()).map(c => c.id);
-    rows = rows.filter(r => myClassIds.includes(r.classId));
+    rows = rows.filter(r => myClassIds.some(id => String(id) === String(r.classId)));
   }
   return rows;
 }
@@ -3405,18 +3431,18 @@ function renderClassResultsTable(){
   const user = getCurrentUser();
   const role = currentUserRole();
   let rows = getClassResults();
-  if (testId) rows = rows.filter(r => r.testId === testId);
-  else if (classId) rows = rows.filter(r => r.classId === classId);
+  if (testId) rows = rows.filter(r => String(r.testId) === String(testId));
+  else if (classId) rows = rows.filter(r => String(r.classId) === String(classId));
   if (role === 'parent' && user) {
     const links = getMembers().filter(m => m.username.toLowerCase() === user.toLowerCase() && m.role === 'parent');
-    const kids = links.map(m => (m.childUsername || '').toLowerCase()).filter(Boolean);
+    const kids = [...links.map(m => (m.childUsername || '').toLowerCase()), parentViewedChildUsername.toLowerCase()].filter(Boolean);
     rows = rows.filter(r => kids.includes((r.username||'').toLowerCase()));
   } else if (role !== 'teacher') {
     rows = rows.filter(r => user && r.username.toLowerCase() === user.toLowerCase());
   } else if (user) {
     const myClassIds = getClasses().filter(c => c.teacherUsername.toLowerCase() === user.toLowerCase()).map(c => c.id);
-    rows = rows.filter(r => myClassIds.includes(r.classId));
-    if (testId) rows = getClassResults().filter(r => r.testId === testId);
+    rows = rows.filter(r => myClassIds.some(id => String(id) === String(r.classId)));
+    if (testId) rows = getClassResults().filter(r => String(r.testId) === String(testId));
   }
   if (!rows.length) { wrap.innerHTML = `<p class="muted-note">${t('noResults')}</p>`; return; }
   const grouped = {};
@@ -3592,7 +3618,7 @@ async function saveClassTest(){
   }
   document.getElementById('testTitleInput').value = '';
   document.getElementById('testQuestionsBox').innerHTML = '';
-  fillTestQuestionEditors(2);
+  fillTestQuestionEditors(1);
   renderTeacherPanel();
 }
 async function deleteClass(classId){
@@ -3619,6 +3645,7 @@ async function viewChildResults(){
   if (!username) { if (msg) msg.textContent = 'Farzand username\'ini kiriting.'; return; }
   try {
     const rows = await window.BilimDueliAPI.Parent.results(username);
+    parentViewedChildUsername = username;
     writeStore(CRESULT_KEY, rows);
     if (msg) msg.textContent = rows.length ? `${username} uchun ${rows.length} ta natija topildi.` : 'Natija topilmadi.';
     renderClassResultsTable();
@@ -3661,9 +3688,13 @@ function renderClassTestsMini(){
   if (mini) {
     mini.innerHTML = joined.map(c => `<div class="muted-note" style="margin-top:8px;">${escapeHtml(c.name)} · <b class="tp-code" style="font-size:14px;">${escapeHtml(c.code)}</b></div>`).join('');
   }
-  const tests = getClassTests().filter(x => joined.some(c => c.id === x.classId));
-  if (!tests.length) { box.innerHTML = ''; return; }
-  box.innerHTML = `<p class="section-label" style="margin-top:14px;">${t('assignedTests')}</p>` + tests.map(x =>
+  const joinedTestIds = new Set(joined.map(c => String(c.id)));
+  const allTests = getClassTests();
+  const activeTests = allTests.filter(x => joinedTestIds.has(String(x.classId)) && isTestActive(x));
+  const expiredTests = allTests.filter(isTestExpired);
+  if (expiredTests.length) writeStore(TEST_KEY, allTests.filter(x => !isTestExpired(x)));
+  if (!activeTests.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<p class="section-label" style="margin-top:14px;">${t('assignedTests')}</p>` + activeTests.map(x =>
     `<button type="button" class="radio-btn assigned-test-btn" data-test-id="${escapeHtml(x.id)}" style="margin:6px 6px 0 0;">${escapeHtml(x.title)} (${x.questions.length})</button>`
   ).join('');
 }
@@ -9223,6 +9254,14 @@ function settleBlitz(){
 }
 
 function startTimer(){
+  if (activeClassTest) {
+    clearInterval(timer);
+    const timerTrack = document.querySelector('.timer-track');
+    if (timerTrack) timerTrack.style.display = 'none';
+    return;
+  }
+  const timerTrack = document.querySelector('.timer-track');
+  if (timerTrack) timerTrack.style.display = '';
   const handicapLimit = isHandicap()
     ? (p1.score === p2.score ? TIME_LIMIT : ((currentPlayer === 1 && p1.score > p2.score) || (currentPlayer === 2 && p2.score > p1.score) ? Math.max(7, TIME_LIMIT - 5) : TIME_LIMIT))
     : TIME_LIMIT;

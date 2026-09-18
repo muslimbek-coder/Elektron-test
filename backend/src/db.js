@@ -89,6 +89,8 @@ CREATE TABLE IF NOT EXISTS class_tests (
   subject TEXT,
   teacher_username TEXT NOT NULL,
   questions TEXT NOT NULL,
+  start_at TEXT,
+  end_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );
@@ -114,5 +116,9 @@ CREATE INDEX IF NOT EXISTS idx_members_class ON class_members(class_id);
 CREATE INDEX IF NOT EXISTS idx_tests_class ON class_tests(class_id);
 CREATE INDEX IF NOT EXISTS idx_results_class ON class_results(class_id);
 `);
+
+const classTestColumns = db.prepare('PRAGMA table_info(class_tests)').all().map((column) => column.name);
+if (!classTestColumns.includes('start_at')) db.exec('ALTER TABLE class_tests ADD COLUMN start_at TEXT');
+if (!classTestColumns.includes('end_at')) db.exec('ALTER TABLE class_tests ADD COLUMN end_at TEXT');
 
 module.exports = db;
