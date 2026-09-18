@@ -39,15 +39,11 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Bu username allaqachon mavjud!' });
     }
 
-    const requestedRole = String(role || 'student').trim().toLowerCase();
-    const submittedTeacherCode = String(teacherCode || '').trim();
-    const configuredTeacherCode = String(config.teacherInviteCode || '').trim();
-
     let finalRole = 'student';
-    if (requestedRole === 'parent') {
+    if (role === 'parent') {
       finalRole = 'parent';
-    } else if (requestedRole === 'teacher') {
-      if (!submittedTeacherCode || submittedTeacherCode !== configuredTeacherCode) {
+    } else if (role === 'teacher') {
+      if (!teacherCode || teacherCode !== config.teacherInviteCode) {
         return res.status(403).json({ error: "O'qituvchi kodi noto'g'ri." });
       }
       finalRole = 'teacher';
@@ -73,12 +69,12 @@ router.post('/register', async (req, res) => {
       birth_year: birthYear || null,
     });
 
-    const user = findByUsername(username.trim());
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
     const token = signToken(user);
-    res.json({ token, user: publicUser(user) });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Ro'yxatdan o'tishda xatolik yuz berdi." });
+    res.status(201).json({ token, user: publicUser(user) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverda xatolik yuz berdi.' });
   }
 });
 
@@ -157,16 +153,13 @@ router.put('/me', requireAuth, async (req, res) => {
       avatarDataUrl: avatarDataUrl || null,
     });
 
-    // Foydalanuvchi nomi o'zgargan bo'lsa, eski statistikalarini yangi nomga ko'chiramiz
-if (username.trim().toLowerCase() !== req.user.username.toLowerCase()) {
+    if (username.trim().toLowerCase() !== req.user.username.toLowerCase()) {
       db.prepare('UPDATE results SET username=@u, display_name=@u WHERE username=@old')
         .run({ u: username.trim(), old: req.user.username });
       try {
         db.prepare('UPDATE user_stats SET display_name=@u WHERE display_name=@old')
           .run({ u: username.trim(), old: req.user.username });
       } catch (e) {
-        // Yangi nom bo'yicha statistika allaqachon mavjud (masalan mehmon sifatida) —
-        // eski yozuvni o'chirib, mavjudini saqlab qolamiz.
         db.prepare('DELETE FROM user_stats WHERE display_name=@old').run({ old: req.user.username });
       }
     }
