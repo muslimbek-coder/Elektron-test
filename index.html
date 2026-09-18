@@ -3144,6 +3144,10 @@ async function openTeacherPanel(){
   if (parentHint) parentHint.style.display = 'none';
   fillTestQuestionEditors(Math.max(1, document.querySelectorAll('.q-editor').length || 1));
   renderTeacherPanel();
+  if (isParent) {
+    // Ota-ona uchun to'g'ridan-to'g'ri Natijalar tabini ochish
+    switchTpTab('results');
+  }
 }
 function closeTeacherPanel(){ document.getElementById('teacherOverlay').classList.remove('open'); }
 function switchTpTab(id){
@@ -3206,6 +3210,21 @@ function renderTeacherPanel(){
   document.querySelector('[data-tp="join"]')?.style.setProperty('display', 'none');
   document.getElementById('tpCreate')?.style.setProperty('display', isTeacher ? '' : 'none');
   document.getElementById('tpJoin')?.style.setProperty('display', 'none');
+  // Ota-ona uchun natijalar menyularini yashirish — faqat farzand natijasi
+  const hideForParent = isParent ? 'none' : '';
+  document.querySelector('#tpResults .tp-row')?.style.setProperty('display', hideForParent);
+  document.getElementById('teacherKpis')?.style.setProperty('display', hideForParent);
+  document.querySelector('.teacher-chart-wrap')?.style.setProperty('display', hideForParent);
+  document.getElementById('teacherSummaryList')?.style.setProperty('display', hideForParent);
+  document.querySelector('.teacher-export-row')?.style.setProperty('display', hideForParent);
+  document.getElementById('teacherStudentsInsight')?.style.setProperty('display', hideForParent);
+  // Ota-ona uchun faqat Natijalar tabini ko'rsatish
+  document.querySelector('[data-tp="classes"]')?.style.setProperty('display', isParent ? 'none' : '');
+  document.querySelector('[data-tp="results"]')?.style.setProperty('display', '');
+  if (isParent) {
+    document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tp === 'results'));
+    document.querySelectorAll('.tp-pane').forEach(p => p.classList.toggle('active', p.id === 'tpResults'));
+  }
   const classes = getClasses();
   const mine = isTeacher ? classes.filter(c => c.teacherUsername.toLowerCase() === (user || '').toLowerCase()) : [];
   const list = document.getElementById('teacherClassesList');
@@ -9813,6 +9832,32 @@ function finishGame(){
   // Mehmon sifatida o'ynagan bo'lsa, natijani saqlash uchun ro'yxatdan o'tishni taklif qilamiz
   const guestCta = document.getElementById('guestSaveCta');
   if (guestCta) guestCta.style.display = getCurrentUser() ? 'none' : 'block';
+
+  // Ota-ona rolida: menyular (statistika, zaif tomonlar, yutuqlar) chiqmasin —
+  // faqat xato javoblar izohi va pastroqda ulashish / qayta o'ynash / rejimni o'zgartirish
+  if (currentUserRole() === 'parent') {
+    const statsTable = document.querySelector('#result .stats-table');
+    if (statsTable) statsTable.style.display = 'none';
+    const weakSec = document.getElementById('weakSection');
+    if (weakSec) weakSec.style.display = 'none';
+    const achvOwner = document.getElementById('achvOwnerName');
+    if (achvOwner && achvOwner.parentElement) achvOwner.parentElement.style.display = 'none';
+    const achvBadges = document.getElementById('achvBadges');
+    if (achvBadges) achvBadges.style.display = 'none';
+    const newAchv = document.getElementById('newAchvToast');
+    if (newAchv) newAchv.style.display = 'none';
+    const examRing = document.getElementById('examScoreRing');
+    if (examRing) examRing.style.display = 'none';
+    const btnRow = document.querySelector('#result .btn-row');
+    if (btnRow) btnRow.style.display = 'flex';
+  } else {
+    const statsTable = document.querySelector('#result .stats-table');
+    if (statsTable) statsTable.style.display = '';
+    const achvOwner = document.getElementById('achvOwnerName');
+    if (achvOwner && achvOwner.parentElement) achvOwner.parentElement.style.display = '';
+    const achvBadges = document.getElementById('achvBadges');
+    if (achvBadges) achvBadges.style.display = '';
+  }
 }
 
 function renderWeakAreas() {
