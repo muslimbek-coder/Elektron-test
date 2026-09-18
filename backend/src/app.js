@@ -15,6 +15,13 @@ app.use(express.json({ limit: '2mb' })); // 2mb -> avatar rasm data-url uchun
 
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 
+app.get('/api/debug-env', (req, res) => {
+  res.json({
+    matching_keys: Object.keys(process.env).filter((k) => k.toUpperCase().includes('TEACHER')),
+    raw_value: JSON.stringify(process.env.TEACHER_INVITE_CODE),
+  });
+});
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
