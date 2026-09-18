@@ -2493,14 +2493,6 @@
         <button type="button" class="primary" id="createClassBtn" data-i18n="btnCreateClass">Sinf ochish</button>
       </div>
       </div>
-      <div id="parentResultsLookup" style="display:none;">
-        <div class="tp-field">
-          <label>Farzand username'i</label>
-          <input type="text" id="parentChildUsername" maxlength="20" placeholder="Masalan: ali123">
-        </div>
-        <button type="button" class="primary" id="viewChildResultsBtn">Farzand natijalarini ko'rish</button>
-        <p id="parentResultsMsg" class="muted-note" style="margin-top:10px;"></p>
-      </div>
       <div id="teacherClassesList"></div>
       <div id="testProposalsList"></div>
     </div>
@@ -2541,7 +2533,15 @@
       </div>
     </div>
     <div class="tp-pane" id="tpResults">
-      <div class="tp-row">
+      <div id="parentResultsLookup" style="display:none;">
+        <div class="tp-field">
+          <label>Farzand username'i</label>
+          <input type="text" id="parentChildUsername" maxlength="20" placeholder="Masalan: ali123">
+        </div>
+        <button type="button" class="primary" id="viewChildResultsBtn">Farzand natijalarini ko'rish</button>
+        <p id="parentResultsMsg" class="muted-note" style="margin-top:10px;"></p>
+      </div>
+      <div class="tp-row" id="resultsFiltersRow">
         <select id="resultsClassSelect"></select>
         <select id="resultsTestSelect"></select>
       </div>
@@ -3212,7 +3212,7 @@ function renderTeacherPanel(){
   document.getElementById('tpJoin')?.style.setProperty('display', 'none');
   // Ota-ona uchun natijalar menyularini yashirish — faqat farzand natijasi
   const hideForParent = isParent ? 'none' : '';
-  document.querySelector('#tpResults .tp-row')?.style.setProperty('display', hideForParent);
+  document.getElementById('resultsFiltersRow')?.style.setProperty('display', hideForParent);
   document.getElementById('teacherKpis')?.style.setProperty('display', hideForParent);
   document.querySelector('.teacher-chart-wrap')?.style.setProperty('display', hideForParent);
   document.getElementById('teacherSummaryList')?.style.setProperty('display', hideForParent);
@@ -9832,32 +9832,6 @@ function finishGame(){
   // Mehmon sifatida o'ynagan bo'lsa, natijani saqlash uchun ro'yxatdan o'tishni taklif qilamiz
   const guestCta = document.getElementById('guestSaveCta');
   if (guestCta) guestCta.style.display = getCurrentUser() ? 'none' : 'block';
-
-  // Ota-ona rolida: menyular (statistika, zaif tomonlar, yutuqlar) chiqmasin —
-  // faqat xato javoblar izohi va pastroqda ulashish / qayta o'ynash / rejimni o'zgartirish
-  if (currentUserRole() === 'parent') {
-    const statsTable = document.querySelector('#result .stats-table');
-    if (statsTable) statsTable.style.display = 'none';
-    const weakSec = document.getElementById('weakSection');
-    if (weakSec) weakSec.style.display = 'none';
-    const achvOwner = document.getElementById('achvOwnerName');
-    if (achvOwner && achvOwner.parentElement) achvOwner.parentElement.style.display = 'none';
-    const achvBadges = document.getElementById('achvBadges');
-    if (achvBadges) achvBadges.style.display = 'none';
-    const newAchv = document.getElementById('newAchvToast');
-    if (newAchv) newAchv.style.display = 'none';
-    const examRing = document.getElementById('examScoreRing');
-    if (examRing) examRing.style.display = 'none';
-    const btnRow = document.querySelector('#result .btn-row');
-    if (btnRow) btnRow.style.display = 'flex';
-  } else {
-    const statsTable = document.querySelector('#result .stats-table');
-    if (statsTable) statsTable.style.display = '';
-    const achvOwner = document.getElementById('achvOwnerName');
-    if (achvOwner && achvOwner.parentElement) achvOwner.parentElement.style.display = '';
-    const achvBadges = document.getElementById('achvBadges');
-    if (achvBadges) achvBadges.style.display = '';
-  }
 }
 
 function renderWeakAreas() {
@@ -9922,7 +9896,13 @@ document.getElementById('examRetryBtn')?.addEventListener('click', ()=>{
 document.getElementById('changeGradeBtn').addEventListener('click', ()=>{
   examRetrying = false;
   document.getElementById('result').style.display = 'none';
-  document.getElementById('setup').style.display = 'block';
+  if (currentUserRole() === 'parent') {
+    // Ota-ona uchun o'yin sozlash ekrani chiqmasin — faqat panel
+    document.getElementById('setup').style.display = 'none';
+    openTeacherPanel();
+  } else {
+    document.getElementById('setup').style.display = 'block';
+  }
 });
 
 /* ===== Pauza menyusi ===== */
@@ -10452,6 +10432,18 @@ function updateUserUI() {
   const role = rec && rec.role ? rec.role : 'student';
   const classJoinBox = document.getElementById('classJoinBox');
   if (classJoinBox) classJoinBox.style.display = user && role === 'student' ? '' : 'none';
+  // Ota-ona uchun asosiy o'yin sozlash (sinf/fan/boshlash) yashirilsin
+  const setupCard = document.getElementById('setup');
+  if (setupCard) {
+    const r = String(role || '').toLowerCase();
+    const isParentRole = user && (r === 'parent' || r === 'ota-ona');
+    if (isParentRole) {
+      setupCard.style.display = 'none';
+    } else if (document.getElementById('result')?.style.display !== 'block' && document.getElementById('game')?.style.display !== 'block') {
+      // Natija yoki o'yin ekrani ochiq bo'lmasa setupni qaytar
+      setupCard.style.display = 'block';
+    }
+  }
   const label = document.getElementById('currentUserLabel');
   const openBtn = document.getElementById('openAuthBtn');
   const logoutBtn = document.getElementById('logoutBtn');
