@@ -17,7 +17,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISO
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 200,
   message: { error: "Juda ko'p urinish. 15 daqiqadan keyin qayta urinib ko'ring." },
 });
 app.use('/api/auth/login', authLimiter);
