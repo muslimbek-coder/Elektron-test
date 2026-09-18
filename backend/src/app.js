@@ -19,9 +19,9 @@ app.get('/api/debug-env', (req, res) => {
   res.json({
     matching_keys: Object.keys(process.env).filter((k) => k.toUpperCase().includes('TEACHER')),
     raw_value: JSON.stringify(process.env.TEACHER_INVITE_CODE),
+    config_value: JSON.stringify(config.teacherInviteCode),
   });
 });
-
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
