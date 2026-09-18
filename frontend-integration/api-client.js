@@ -12,7 +12,7 @@
  */
 (function () {
   // ==== 1) SOZLAMA: backend manzilini shu yerga yozing ====
-  // Production backend URL (Render): https://bilim-dueli-backend-bddq.onrender.com
+  // Production backend URL (Render): https://bilim-dueli-backend-v2.onrender.com
   // Istalgan vaqtda browserdan o'zgartirish uchun global o'zgaruvchidan ham foydalanish mumkin:
   // window.BILIM_DUELI_BACKEND_URL = 'https://your-backend.example.com';
    const BACKEND_URL = (window.BILIM_DUELI_BACKEND_URL || 'https://bilim-dueli-backend-v2.onrender.com').replace(/\/$/, '');
