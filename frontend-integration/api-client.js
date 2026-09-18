@@ -15,7 +15,7 @@
   // Production backend URL (Render): https://bilim-dueli-backend-bddq.onrender.com
   // Istalgan vaqtda browserdan o'zgartirish uchun global o'zgaruvchidan ham foydalanish mumkin:
   // window.BILIM_DUELI_BACKEND_URL = 'https://your-backend.example.com';
-  const BACKEND_URL = (window.BILIM_DUELI_BACKEND_URL || 'https://bilim-dueli-backend-bddq.onrender.com').replace(/\/$/, '');
+   const BACKEND_URL = (window.BILIM_DUELI_BACKEND_URL || 'https://bilim-dueli-backend-v2.onrender.com').replace(/\/$/, '');
 
   const TOKEN_KEY = 'bilimDueliToken';
 
