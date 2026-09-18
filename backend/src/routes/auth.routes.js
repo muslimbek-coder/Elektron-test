@@ -43,7 +43,9 @@ router.post('/register', async (req, res) => {
     if (role === 'parent') {
       finalRole = 'parent';
     } else if (role === 'teacher') {
-      if (!teacherCode || teacherCode !== config.teacherInviteCode) {
+      const submitted = String(teacherCode || '').trim();
+      const expected = String(config.teacherInviteCode || '').trim();
+      if (!submitted || !expected || submitted !== expected) {
         return res.status(403).json({ error: "O'qituvchi kodi noto'g'ri." });
       }
       finalRole = 'teacher';
