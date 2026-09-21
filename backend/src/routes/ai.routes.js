@@ -72,16 +72,25 @@ JSON formati:
 `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: instruction,
-      config: {
-        responseMimeType: 'application/json'
-      }
+      model: 'gemini-3.8-flash',
+      contents: instruction
     });
 
     const text = response.text;
 
-    const result = JSON.parse(text);
+    if (!text) {
+      throw new Error('AI bo‘sh javob qaytardi.');
+    }
+
+    // Agar AI ```json ... ``` ko'rinishida qaytarsa,
+    // markdown qismlarini olib tashlaymiz.
+    const cleanedText = text
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+
+    const result = JSON.parse(cleanedText);
 
     if (!result.questions || !Array.isArray(result.questions)) {
       throw new Error('AI noto‘g‘ri formatda javob qaytardi.');
