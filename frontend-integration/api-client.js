@@ -221,12 +221,27 @@
     };
   }
 
-  window.BilimDueliAPI = {
-    Auth,
-    Results,
-    Classes,
-    Parent,
-    pickDuelQuestions,
-    realtime: createRealtimeClient(),
-  };
+window.BilimDueliAPI = {
+  Auth,
+  Results,
+  Classes,
+  Parent,
+
+  AI: {
+    async generateTest({ prompt, count, difficulty, language = 'uz' }) {
+      return apiFetch('/api/ai/generate-test', {
+        method: 'POST',
+        body: JSON.stringify({
+          prompt,
+          count,
+          difficulty,
+          language
+        })
+      });
+    }
+  },
+
+  pickDuelQuestions,
+  realtime: createRealtimeClient(),
+};
 })();

@@ -191,53 +191,6 @@
     transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
     clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%);
   }
-  .dev-card::before{
-    content:'';
-    position:absolute; top:0; right:0;
-    width:26px; height:26px;
-    background: linear-gradient(135deg, var(--p1), var(--p2));
-  }
-  .dev-card:hover{
-    transform: translateY(-4px);
-    border-color: var(--p2);
-    box-shadow: 0 12px 32px rgba(33,230,193,0.18);
-  }
-.dev-img {
-    width: 180px;
-    height: 180px;
-    border-radius: var(--radius);
-    border: 3px solid var(--p1);
-    object-fit: cover; 
-    flex-shrink: 0;
-  }
-  
-  .dev-info h3 {
-    margin: 0 0 6px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 22px;
-    color: var(--p2);
-  }
-  .dev-info p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--chalk-dim);
-    line-height: 1.5;
-  }
-  .dev-tags {
-    margin-top: 10px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .dev-tag {
-    background: var(--panel2);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    color: var(--p1);
-    border: 1px solid rgba(242,169,59,0.2);
-  }
-
   .card{
     position:relative;
     background:var(--panel);
@@ -473,7 +426,7 @@
   .node.p2{ background:var(--p2); }
   .node.miss{ background:#3a3f5a; }
   
-  .turn-row{ display:flex; justify-content:between; align-items:center; margin-bottom:10px; gap:10px; }
+  .turn-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; }
   .pause-btn{
     width:34px; height:34px; flex-shrink:0; border-radius:50%;
     background:var(--panel2); border:1px solid var(--line-strong); color:var(--chalk);
@@ -2052,6 +2005,85 @@
     .q-footer-row .q-exp{ grid-column:1 / -1; }
   }
 
+.ai-test-generator{
+  margin:16px 0 20px;
+  padding:18px;
+  border:1px solid rgba(33,230,193,.25);
+  border-radius:16px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(33,230,193,.08),
+      rgba(124,92,255,.08)
+    );
+}
+
+.ai-test-header{
+  display:flex;
+  align-items:center;
+  margin-bottom:14px;
+}
+
+.ai-test-header strong{
+  display:block;
+  font-size:17px;
+  margin-top:6px;
+}
+
+.ai-test-header p{
+  margin:5px 0 0;
+  color:var(--chalk-dim);
+  font-size:12px;
+}
+
+.ai-test-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+  background:rgba(33,230,193,.12);
+  color:var(--p2);
+  border:1px solid rgba(33,230,193,.25);
+}
+
+.ai-generator-options{
+  margin-bottom:8px;
+}
+
+.ai-generator-options .tp-field{
+  flex:1;
+  min-width:150px;
+  margin-bottom:0;
+}
+
+.ai-generate-btn{
+  width:100%;
+  margin-top:6px;
+}
+
+.ai-generate-btn.loading{
+  opacity:.7;
+  pointer-events:none;
+}
+
+.ai-test-status{
+  min-height:20px;
+  margin-top:10px;
+  font-size:12px;
+  color:var(--chalk-dim);
+}
+
+.ai-test-status.success{
+  color:var(--p2);
+}
+
+.ai-test-status.error{
+  color:#ff6b6b;
+}
+
+
 </style>
 </head>
 <body>
@@ -2509,6 +2541,55 @@
         <label data-i18n="testSubject">Fan</label>
         <input type="text" id="testSubjectInput" maxlength="40" placeholder="Matematika">
       </div>
+
+<div class="ai-test-generator">
+  <div class="ai-test-header">
+    <div>
+      <span class="ai-test-badge">🤖 AI</span>
+      <strong>AI Test Generator</strong>
+      <p>Bir necha soniyada test savollarini avtomatik yarating.</p>
+    </div>
+  </div>
+
+  <div class="tp-field">
+    <label>AI ga topshiriq</label>
+    <textarea
+      id="aiTestPrompt"
+      rows="3"
+      maxlength="1000"
+      placeholder="Masalan: 8-sinf biologiya, fotosintez mavzusi, 20 ta savol, o‘rtacha qiyinlik..."
+    ></textarea>
+  </div>
+
+  <div class="tp-row ai-generator-options">
+    <div class="tp-field">
+      <label>Savollar soni</label>
+      <select id="aiQuestionCount">
+        <option value="5">5 ta</option>
+        <option value="10" selected>10 ta</option>
+        <option value="15">15 ta</option>
+        <option value="20">20 ta</option>
+        <option value="30">30 ta</option>
+      </select>
+    </div>
+
+    <div class="tp-field">
+      <label>Qiyinlik</label>
+      <select id="aiDifficulty">
+        <option value="easy">Oson</option>
+        <option value="medium" selected>O‘rtacha</option>
+        <option value="hard">Qiyin</option>
+      </select>
+    </div>
+  </div>
+
+  <button type="button" class="primary ai-generate-btn" id="generateAiTestBtn">
+    🤖 AI orqali test yaratish
+  </button>
+
+  <div id="aiTestStatus" class="ai-test-status"></div>
+</div>
+
       <div class="tp-row" style="margin-top:0;">
         <div class="tp-field" style="flex:1; min-width:180px; margin-bottom:0;">
           <label data-i18n="activateAt">Faollashish vaqti</label>
@@ -2698,7 +2779,7 @@ let mistakes = [];
 let subjectStats = {};
 let masterVolume = 0.7;
 let lives = 3;
-let MAX_LIVES = 3;
+const MAX_LIVES = 3;
 let survivalStreak = 0;
 let roundWait = null;
 let blitzBotWait = null;
@@ -2707,7 +2788,6 @@ let isPaused = false;
 let blitzState = { p1:null, p2:null, resolved:false };
 let examRetrying = false;
 let lastExamQuestions = [];
-let skipStartCountdown = false;
 
 const MODE_IDS = {
   pvp:'modePVP', bot:'modeBot', solo:'modeSolo',
@@ -3152,7 +3232,6 @@ async function openTeacherPanel(){
 function closeTeacherPanel(){ document.getElementById('teacherOverlay').classList.remove('open'); }
 function switchTpTab(id){
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tp === id));
-  document.querySelectorAll('.tp-pane').forEach(p => p.classList.toggle('active', p.id === 'tp' + id.charAt(0).toUpperCase() + id.slice(1) || false));
   const map = { classes:'tpClasses', create:'tpCreate', results:'tpResults', join:'tpJoin' };
   document.querySelectorAll('.tp-pane').forEach(p => p.classList.remove('active'));
   const pane = document.getElementById(map[id]);
@@ -3180,6 +3259,119 @@ function fillTestQuestionEditors(n){
   }
   updateQuestionCount();
 }
+
+function fillQuestionsFromAI(questions) {
+
+  const box = document.getElementById('testQuestionsBox');
+
+  if (!box) return;
+
+  box.innerHTML = '';
+
+  questions.forEach((item, index) => {
+
+    const d = document.createElement('div');
+
+    d.className = 'q-editor';
+
+    const options = Array.isArray(item.options)
+      ? item.options
+      : ['', '', '', ''];
+
+    const correctIndex =
+      Number.isInteger(item.correct)
+        ? item.correct
+        : 0;
+
+    d.innerHTML = `
+      <div class="q-editor-head">
+        <span class="q-number">
+          ${String(index + 1).padStart(2, '0')}
+        </span>
+
+        <span class="q-editor-title">
+          ${t('qLabel')} ${index + 1}
+        </span>
+
+        <button
+          type="button"
+          class="q-remove"
+          title="${t('deleteQuestion')}"
+          aria-label="${t('deleteQuestion')}"
+        >&times;</button>
+      </div>
+
+      <label class="q-label">
+        ${t('questionText')}
+      </label>
+
+      <textarea
+        class="q-text"
+        rows="2"
+        maxlength="300"
+      >${escapeHtml(item.question || '')}</textarea>
+
+      <div class="opts">
+
+        ${['A','B','C','D'].map((letter, i) => `
+          <label class="q-option">
+            <span>${letter}</span>
+
+            <input
+              class="q-opt"
+              data-i="${i}"
+              type="text"
+              maxlength="120"
+              value="${escapeHtml(options[i] || '')}"
+            >
+          </label>
+        `).join('')}
+
+      </div>
+
+      <div class="q-footer-row">
+
+        <label class="q-label">
+          ${t('correct')}
+        </label>
+
+        <select class="q-ans">
+
+          <option value="A" ${correctIndex === 0 ? 'selected' : ''}>
+            A
+          </option>
+
+          <option value="B" ${correctIndex === 1 ? 'selected' : ''}>
+            B
+          </option>
+
+          <option value="C" ${correctIndex === 2 ? 'selected' : ''}>
+            C
+          </option>
+
+          <option value="D" ${correctIndex === 3 ? 'selected' : ''}>
+            D
+          </option>
+
+        </select>
+
+        <input
+          class="q-exp"
+          type="text"
+          maxlength="240"
+          value="${escapeHtml(item.explanation || '')}"
+          placeholder="${t('explain')}"
+        >
+
+      </div>
+    `;
+
+    box.appendChild(d);
+  });
+
+  updateQuestionCount();
+}
+
 function updateQuestionCount(){
   const box = document.getElementById('testQuestionsBox');
   const label = document.getElementById('questionCountLabel');
@@ -3582,6 +3774,118 @@ async function createClass(){
   showFxToast(t('classCreated'), 'var(--p2)');
   renderTeacherPanel();
 }
+
+async function generateAiTest() {
+  const user = getCurrentUser();
+
+  if (!user) {
+    openAuthModal({ tab: 'login' });
+    return;
+  }
+
+  if (currentUserRole() !== 'teacher') {
+    showFxToast(
+      "AI test yaratish faqat o'qituvchi uchun.",
+      'var(--warn)'
+    );
+    return;
+  }
+
+  const promptInput = document.getElementById('aiTestPrompt');
+  const countInput = document.getElementById('aiQuestionCount');
+  const difficultyInput = document.getElementById('aiDifficulty');
+  const status = document.getElementById('aiTestStatus');
+  const button = document.getElementById('generateAiTestBtn');
+
+  const prompt = promptInput?.value.trim();
+  const count = Number(countInput?.value || 10);
+  const difficulty = difficultyInput?.value || 'medium';
+
+  if (!prompt) {
+    status.textContent = "Mavzu yoki topshiriqni yozing.";
+    status.className = 'ai-test-status error';
+    promptInput?.focus();
+    return;
+  }
+
+  button.classList.add('loading');
+  button.textContent = '⏳ Test yaratilmoqda...';
+
+  status.textContent = "AI savollarni tayyorlamoqda...";
+  status.className = 'ai-test-status';
+
+  try {
+
+    if (!window.BilimDueliAPI?.AI?.generateTest) {
+      throw new Error(
+        "AI API ulanmagan. Backenddagi /api/ai/generate-test endpointini tekshiring."
+      );
+    }
+
+    const data = await window.BilimDueliAPI.AI.generateTest({
+      prompt,
+      count,
+      difficulty,
+      language: 'uz'
+    });
+
+    if (!data || !Array.isArray(data.questions)) {
+      throw new Error("AI noto'g'ri formatda javob qaytardi.");
+    }
+
+    fillQuestionsFromAI(data.questions);
+
+    // Agar AI test nomini qaytarsa
+    if (data.title) {
+      const titleInput = document.getElementById('testTitleInput');
+
+      if (titleInput && !titleInput.value.trim()) {
+        titleInput.value = data.title;
+      }
+    }
+
+    // Agar fan qaytgan bo'lsa
+    if (data.subject) {
+      const subjectInput =
+        document.getElementById('testSubjectInput');
+
+      if (subjectInput && !subjectInput.value.trim()) {
+        subjectInput.value = data.subject;
+      }
+    }
+
+    status.textContent =
+      `✅ ${data.questions.length} ta savol yaratildi.`;
+
+    status.className = 'ai-test-status success';
+
+    showFxToast(
+      `${data.questions.length} ta AI savol yaratildi`,
+      'var(--p2)'
+    );
+
+  } catch (error) {
+
+    console.error('AI test generation error:', error);
+
+    status.textContent =
+      error?.message ||
+      "AI test yaratishda xatolik yuz berdi.";
+
+    status.className = 'ai-test-status error';
+
+    showFxToast(
+      "AI test yaratilmadi.",
+      'var(--warn)'
+    );
+
+  } finally {
+
+    button.classList.remove('loading');
+    button.textContent = '🤖 AI orqali test yaratish';
+  }
+}
+
 async function saveClassTest(){
   const user = getCurrentUser();
   if (!user) { openAuthModal({}); return; }
@@ -3800,11 +4104,6 @@ function openAuthGate(message) {
   openAuthModal({ forced: false, message: message });
 }
 
-function startSolo() { gameMode = 'solo'; }
-function startPvp() { gameMode = 'pvp'; }
-function startBot() { gameMode = 'bot'; }
-
-
 // --- Login/Chiqish tugmalari va reyting modal tugmalari (sahifa ochilganda darhol ulanadi) ---
 document.getElementById('openAuthBtn')?.addEventListener('click', () => {
   openAuthModal({ forced: false });
@@ -3875,6 +4174,8 @@ document.getElementById('tpJoinBtn')?.addEventListener('click', () => joinClassB
 document.getElementById('classCodeInput')?.addEventListener('keydown', (event) => { if (event.key === 'Enter') joinClassByCode(document.getElementById('classCodeInput').value, document.getElementById('childUsernameInput').value); });
 document.getElementById('tpJoinCode')?.addEventListener('keydown', (event) => { if (event.key === 'Enter') joinClassByCode(document.getElementById('tpJoinCode').value, document.getElementById('tpJoinChild').value); });
 document.getElementById('saveTestBtn')?.addEventListener('click', saveClassTest);
+document.getElementById('generateAiTestBtn')
+  ?.addEventListener('click', generateAiTest);
 document.getElementById('addQuestionBtn')?.addEventListener('click', () => fillTestQuestionEditors((document.querySelectorAll('.q-editor').length || 0) + 1));
 document.getElementById('closeTeacher')?.addEventListener('click', closeTeacherPanel);
 document.getElementById('exportTeacherCsvBtn')?.addEventListener('click', downloadTeacherCsv);
@@ -8216,7 +8517,6 @@ function beginMatch(fromReplay){
   survivalStreak = 0;
   speedTimeLeft = SPEED_TOTAL_TIME;
   isExtraRoundMode = false;
-  skipStartCountdown = fromReplay && gameMode === 'exam' && examRetrying;
 
   p1 = { name:n1, score:0, correct:0, total:0, combo:0, maxCombo:0, survivalBest:0 };
   p2 = { name:n2, score:0, correct:0, total:0, combo:0, maxCombo:0, survivalBest:0 };
@@ -8916,75 +9216,6 @@ async function openLeaderboard(mode = gameMode || 'solo') {
   document.getElementById('leaderboardOverlay').classList.add('open');
 }
 
-function endGame() {
-  stopTimer();
-  showScreen('result');
-
-  // Natijalarni hisoblash
-  p1.pct = p1.total > 0 ? Math.round((p1.correct / p1.total) * 100) : 0;
-  p2.pct = p2.total > 0 ? Math.round((p2.correct / p2.total) * 100) : 0;
-
-  // Reytingga saqlash (lokal + backend)
-  if (p1.name) {
-    saveLeaderboardScore(p1.name, p1.score, p1.total);
-  }
-  if (gameMode === 'pvp' && p2.name) {
-    saveLeaderboardScore(p2.name, p2.score, p2.total);
-  }
-  if (gameMode === 'solo' && window.BilimDueliAPI && window.BilimDueliAPI.Results) {
-    const resultPayload = {
-      mode: gameMode,
-      grade: grade || null,
-      subject: selectedSubject || null,
-      score: p1.score,
-      total: p1.total,
-      correct: p1.correct,
-      maxCombo: p1.maxCombo,
-      survivalBest: p1.survivalBest,
-      won: p1.score >= (p2 ? p2.score : 0),
-      guestName: p1.name || (getCurrentUser() || 'O\'yinchi')
-    };
-    submitSoloResult(resultPayload);
-  }
-
-  // Natijalar matnini ekranga chiqarish
-  if (gameMode === 'solo') {
-    document.getElementById('resTitle').textContent = "O'yin Yakunlandi!";
-    document.getElementById('resBody').innerHTML = `
-      <div class="result-box">
-        <div class="p-name">${escapeHtml(p1.name)}</div>
-        <div class="p-score">${p1.score} ball</div>
-        <div class="p-detail">To'g'ri: ${p1.correct} / ${p1.total} (${p1.pct}%)</div>
-      </div>
-    `;
-  } else {
-    let winnerText = "";
-    if (p1.score > p2.score) {
-      winnerText = `🏆 ${escapeHtml(p1.name)} g'olib bo'ldi!`;
-    } else if (p2.score > p1.score) {
-      winnerText = `🏆 ${escapeHtml(p2.name)} g'olib bo'ldi!`;
-    } else {
-      winnerText = "🤝 Durang!";
-    }
-
-    document.getElementById('resTitle').textContent = winnerText;
-    document.getElementById('resBody').innerHTML = `
-      <div class="result-grid">
-        <div class="result-box">
-          <div class="p-name">${escapeHtml(p1.name)}</div>
-          <div class="p-score">${p1.score} ball</div>
-          <div class="p-detail">To'g'ri: ${p1.correct} / ${p1.total} (${p1.pct}%)</div>
-        </div>
-        <div class="result-box">
-          <div class="p-name">${escapeHtml(p2.name)}</div>
-          <div class="p-score">${p2.score} ball</div>
-          <div class="p-detail">To'g me'yor: ${p2.correct} / ${p2.total} (${p2.pct}%)</div>
-        </div>
-      </div>
-    `;
-  }
-}
-
 function finishGame(){
   clearInterval(timer);
   clearTimeout(roundWait);
@@ -9286,31 +9517,7 @@ function saveLeaderboardScore(name, score, total) {
   } catch (e) {}
 }
 
-function renderLeaderboard() {
-  const container = document.getElementById('leaderboardList');
-  if (!container) return;
-  
-  const lb = getLeaderboard();
-  if (lb.length === 0) {
-    container.innerHTML = '<div class="lb-empty" style="text-align:center; padding: 20px; color: #888;">Hali hech qanday natija saqlanmagan.</div>';
-    return;
-  }
-  
-  let html = '';
-  lb.forEach((item, index) => {
-    html += `
-      <div class="lb-row" style="display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;">
-        <div style="font-weight:bold; width: 30px;">#${index + 1}</div>
-        <div style="flex-grow:1; text-align:left; padding-left:10px;">
-          <div style="font-weight:600;">${escapeHtml(item.name)}</div>
-          <div style="font-size:12px; color:#666;">${item.date} • ${item.total} ta savol</div>
-        </div>
-        <div style="font-weight:bold; color:#2563eb;">${item.score} ball</div>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
-}
+
 
 // --- AUTHENTICATION (LOCALSTORAGE) ---
 const USERS_KEY = 'bilimDueliUsers';
