@@ -220,4 +220,3 @@ JSON formati:
 });
 
 module.exports = router;
-````
