@@ -10,6 +10,7 @@ const classesRoutes = require('./routes/classes.routes');
 const aiRoutes = require('./routes/ai.routes');
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(express.json({ limit: '2mb' })); // 2mb -> avatar rasm data-url uchun
