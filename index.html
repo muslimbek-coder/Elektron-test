@@ -2506,223 +2506,658 @@
 <div class="modal-overlay teacher-overlay" id="teacherOverlay">
   <div class="modal-box">
     <button class="modal-close" id="closeTeacher">&times;</button>
+
     <h2 data-i18n="teacherPanelTitle">👨‍🏫 O'qituvchi / ota-ona paneli</h2>
-    <p class="modal-sub" data-i18n="teacherPanelSub">Sinf yarating, test tuzing va o'quvchi natijalarini kuzating.</p>
-    <div class="tp-tabs">
-      <button type="button" class="tp-tab active" data-tp="classes" data-i18n="tabClasses">Sinflar</button>
-      <button type="button" class="tp-tab" data-tp="create" data-i18n="tabCreateTest">Test yaratish</button>
-      <button type="button" class="tp-tab" data-tp="results" data-i18n="tabResults">Natijalar</button>
-      <button type="button" class="tp-tab" data-tp="join" data-i18n="tabJoin">Qo'shilish</button>
-      <button type="button" class="tp-tab" data-tp="import">📊 O'quvchilarni import qilish</button>
-    </div>
-    <div class="tp-pane active" id="tpClasses">
-      <div id="teacherClassBuilder">
-      <div class="tp-field">
-        <label data-i18n="className">Sinf nomi</label>
-        <input type="text" id="newClassName" maxlength="40" placeholder="5-A, Matematika guruhi...">
-      </div>
-      <div class="tp-row">
-        <select id="newClassGrade"></select>
-        <button type="button" class="primary" id="createClassBtn" data-i18n="btnCreateClass">Sinf ochish</button>
-      </div>
-      </div>
-      <div id="teacherClassesList"></div>
-      <div id="testProposalsList"></div>
-    </div>
-    <div class="tp-pane" id="tpCreate">
-      <div class="tp-field">
-        <label data-i18n="pickClass">Sinfni tanlang</label>
-        <select id="testClassSelect"></select>
-      </div>
-      <div class="tp-field">
-        <label data-i18n="testTitle">Test nomi</label>
-        <input type="text" id="testTitleInput" maxlength="80">
-      </div>
-      <div class="tp-field">
-        <label data-i18n="testSubject">Fan</label>
-        <input type="text" id="testSubjectInput" maxlength="40" placeholder="Matematika">
-      </div>
 
-<div class="ai-test-generator">
-  <div class="ai-test-header">
-    <div>
-      <span class="ai-test-badge">🤖 AI</span>
-      <strong>AI Test Generator</strong>
-      <p>Bir necha soniyada test savollarini avtomatik yarating.</p>
-    </div>
-  </div>
-
-  <div class="tp-field">
-    <label>AI ga topshiriq</label>
-    <textarea
-      id="aiTestPrompt"
-      rows="3"
-      maxlength="1000"
-      placeholder="Masalan: 8-sinf biologiya, fotosintez mavzusi, 20 ta savol, o‘rtacha qiyinlik..."
-    ></textarea>
-  </div>
-
-  <div class="tp-row ai-generator-options">
-    <div class="tp-field">
-      <label>Savollar soni</label>
-      <select id="aiQuestionCount">
-        <option value="5">5 ta</option>
-        <option value="10" selected>10 ta</option>
-        <option value="15">15 ta</option>
-        <option value="20">20 ta</option>
-        <option value="30">30 ta</option>
-      </select>
-    </div>
-
-    <div class="tp-field">
-      <label>Qiyinlik</label>
-      <select id="aiDifficulty">
-        <option value="easy">Oson</option>
-        <option value="medium" selected>O‘rtacha</option>
-        <option value="hard">Qiyin</option>
-      </select>
-    </div>
-  </div>
-
-  <button type="button" class="primary ai-generate-btn" id="generateAiTestBtn">
-    🤖 AI orqali test yaratish
-  </button>
-
-  <div id="aiTestStatus" class="ai-test-status"></div>
-</div>
-
-      <div class="tp-row" style="margin-top:0;">
-        <div class="tp-field" style="flex:1; min-width:180px; margin-bottom:0;">
-          <label data-i18n="activateAt">Faollashish vaqti</label>
-          <input type="datetime-local" id="testScheduleStart">
-        </div>
-        <div class="tp-field" style="flex:1; min-width:180px; margin-bottom:0;">
-          <label data-i18n="finishAt">Tugash vaqti</label>
-          <input type="datetime-local" id="testScheduleEnd">
-        </div>
-      </div>
-      <div class="question-builder-head">
-        <div>
-          <span class="question-builder-kicker" data-i18n="builderTitle">TEST KONSTRUKTORI</span>
-          <strong data-i18n="questions">Savollar</strong>
-        </div>
-          <span id="questionCountLabel" class="question-count-label" data-i18n="questionCount">0 ta savol</span>
-      </div>
-      <div id="testQuestionsBox" class="question-builder"></div>
-      <div class="tp-row">
-        <button type="button" id="addQuestionBtn" data-i18n="btnAddQuestion">+ Savol qo'shish</button>
-        <button type="button" class="primary" id="saveTestBtn" data-i18n="btnSaveTest">Testni saqlash</button>
-      </div>
-    </div>
-    <div class="tp-pane" id="tpResults">
-      <div id="parentResultsLookup" style="display:none;">
-        <div class="tp-field">
-          <label>Farzand username'i</label>
-          <input type="text" id="parentChildUsername" maxlength="20" placeholder="Masalan: ali123">
-        </div>
-        <button type="button" class="primary" id="viewChildResultsBtn">Farzand natijalarini ko'rish</button>
-        <p id="parentResultsMsg" class="muted-note" style="margin-top:10px;"></p>
-      </div>
-      <div class="tp-row" id="resultsFiltersRow">
-        <select id="resultsClassSelect"></select>
-        <select id="resultsTestSelect"></select>
-      </div>
-      <div id="teacherKpis" class="teacher-kpis"></div>
-      <div class="teacher-chart-wrap">
-        <div class="teacher-chart-head">
-          <span data-i18n="classResult">Sinf natijasi</span>
-          <span id="teacherChartLegend">Avg: 0%</span>
-        </div>
-        <div id="teacherChart" class="teacher-chart"></div>
-      </div>
-      <div id="teacherSummaryList" class="teacher-summary-list"></div>
-      <div class="teacher-export-row">
-        <button type="button" id="exportTeacherCsvBtn" class="export-btn" data-i18n="exportCsv">Export CSV</button>
-      </div>
-      <div id="teacherStudentsInsight" class="teacher-detail-grid"></div>
-      <div id="resultsTableWrap"></div>
-    </div>
-    <div class="tp-pane" id="tpJoin">
-      <p class="muted-note" data-i18n="joinPanelHint">O'quvchi yoki ota-ona o'qituvchi kodini kiritadi. Ota-ona farzand username'ini ham yozadi.</p>
-      <div class="tp-field">
-        <label data-i18n="classCode">Sinf kodi</label>
-        <input type="text" id="tpJoinCode" maxlength="8" style="text-transform:uppercase;">
-      </div>
-      <div class="tp-pane" id="tpImport">
-  <div class="tp-card">
-    <h3 style="margin-top:0; color:var(--p2);">
-      📊 O'quvchilarni Excel orqali qo'shish
-    </h3>
-
-    <p class="muted-note">
-      Excel fayl yuklang. Tizim har bir o'quvchi uchun avtomatik
-      username va xavfsiz parol yaratadi.
+    <p class="modal-sub" data-i18n="teacherPanelSub">
+      Sinf yarating, test tuzing va o'quvchi natijalarini kuzating.
     </p>
 
-    <div class="tp-card" style="margin-top:14px;">
-      <strong>Excel formati:</strong>
+    <div class="tp-tabs">
+      <button type="button" class="tp-tab active" data-tp="classes" data-i18n="tabClasses">
+        Sinflar
+      </button>
 
-      <div class="muted-note" style="margin-top:8px;">
-        Faylda quyidagi 3 ta ustun bo'lishi kerak:
-      </div>
+      <button type="button" class="tp-tab" data-tp="create" data-i18n="tabCreateTest">
+        Test yaratish
+      </button>
 
-      <div style="
-        display:grid;
-        grid-template-columns:repeat(3,1fr);
-        gap:8px;
-        margin-top:10px;
-      ">
-        <div class="tp-field" style="margin:0;">
-          <input value="Ism" readonly>
-        </div>
+      <button type="button" class="tp-tab" data-tp="results" data-i18n="tabResults">
+        Natijalar
+      </button>
 
-        <div class="tp-field" style="margin:0;">
-          <input value="Familiya" readonly>
-        </div>
+      <button type="button" class="tp-tab" data-tp="join" data-i18n="tabJoin">
+        Qo'shilish
+      </button>
 
-        <div class="tp-field" style="margin:0;">
-          <input value="TugilganYil" readonly>
-        </div>
-      </div>
+      <button type="button" class="tp-tab" data-tp="import">
+        📊 O'quvchilarni import qilish
+      </button>
     </div>
 
-    <div class="tp-field" style="margin-top:16px;">
-      <label>Excel fayl</label>
 
-      <input
-        type="file"
-        id="studentExcelFile"
-        accept=".xlsx,.xls"
-      >
+    <!-- ==================== SINFLAR ==================== -->
+
+    <div class="tp-pane active" id="tpClasses">
+
+      <div id="teacherClassBuilder">
+
+        <div class="tp-field">
+          <label data-i18n="className">Sinf nomi</label>
+
+          <input
+            type="text"
+            id="newClassName"
+            maxlength="40"
+            placeholder="5-A, Matematika guruhi..."
+          >
+        </div>
+
+        <div class="tp-row">
+
+          <select id="newClassGrade"></select>
+
+          <button
+            type="button"
+            class="primary"
+            id="createClassBtn"
+            data-i18n="btnCreateClass"
+          >
+            Sinf ochish
+          </button>
+
+        </div>
+
+      </div>
+
+      <div id="teacherClassesList"></div>
+
+      <div id="testProposalsList"></div>
+
     </div>
 
-    <button
-      type="button"
-      class="primary"
-      id="importStudentsBtn"
-    >
-      📥 O'quvchilarni yaratish
-    </button>
 
-    <div
-      id="studentImportStatus"
-      class="muted-note"
-      style="margin-top:12px;"
-    ></div>
+    <!-- ==================== TEST YARATISH ==================== -->
 
-    <div
-      id="studentImportResults"
-      style="margin-top:16px;"
-    ></div>
-  </div>
-</div>
+    <div class="tp-pane" id="tpCreate">
+
       <div class="tp-field">
-        <label data-i18n="childUsername">Farzand username (ixtiyoriy)</label>
-        <input type="text" id="tpJoinChild" maxlength="20">
+
+        <label data-i18n="pickClass">
+          Sinfni tanlang
+        </label>
+
+        <select id="testClassSelect"></select>
+
       </div>
-      <button type="button" class="primary" id="tpJoinBtn" data-i18n="btnJoin">Qo'shilish</button>
-      <div id="tpJoinMsg" class="muted-note" style="margin-top:10px;"></div>
+
+
+      <div class="tp-field">
+
+        <label data-i18n="testTitle">
+          Test nomi
+        </label>
+
+        <input
+          type="text"
+          id="testTitleInput"
+          maxlength="80"
+        >
+
+      </div>
+
+
+      <div class="tp-field">
+
+        <label data-i18n="testSubject">
+          Fan
+        </label>
+
+        <input
+          type="text"
+          id="testSubjectInput"
+          maxlength="40"
+          placeholder="Matematika"
+        >
+
+      </div>
+
+
+      <!-- AI TEST GENERATOR -->
+
+      <div class="ai-test-generator">
+
+        <div class="ai-test-header">
+
+          <div>
+
+            <span class="ai-test-badge">
+              🤖 AI
+            </span>
+
+            <strong>
+              AI Test Generator
+            </strong>
+
+            <p>
+              Bir necha soniyada test savollarini avtomatik yarating.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="tp-field">
+
+          <label>
+            AI ga topshiriq
+          </label>
+
+          <textarea
+            id="aiTestPrompt"
+            rows="3"
+            maxlength="1000"
+            placeholder="Masalan: 8-sinf biologiya, fotosintez mavzusi, 20 ta savol, o‘rtacha qiyinlik..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="tp-row ai-generator-options">
+
+          <div class="tp-field">
+
+            <label>
+              Savollar soni
+            </label>
+
+            <select id="aiQuestionCount">
+
+              <option value="5">
+                5 ta
+              </option>
+
+              <option value="10" selected>
+                10 ta
+              </option>
+
+              <option value="15">
+                15 ta
+              </option>
+
+              <option value="20">
+                20 ta
+              </option>
+
+              <option value="30">
+                30 ta
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="tp-field">
+
+            <label>
+              Qiyinlik
+            </label>
+
+            <select id="aiDifficulty">
+
+              <option value="easy">
+                Oson
+              </option>
+
+              <option value="medium" selected>
+                O‘rtacha
+              </option>
+
+              <option value="hard">
+                Qiyin
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="primary ai-generate-btn"
+          id="generateAiTestBtn"
+        >
+          🤖 AI orqali test yaratish
+        </button>
+
+
+        <div
+          id="aiTestStatus"
+          class="ai-test-status"
+        ></div>
+
+      </div>
+
+
+      <div
+        class="tp-row"
+        style="margin-top:0;"
+      >
+
+        <div
+          class="tp-field"
+          style="flex:1; min-width:180px; margin-bottom:0;"
+        >
+
+          <label data-i18n="activateAt">
+            Faollashish vaqti
+          </label>
+
+          <input
+            type="datetime-local"
+            id="testScheduleStart"
+          >
+
+        </div>
+
+
+        <div
+          class="tp-field"
+          style="flex:1; min-width:180px; margin-bottom:0;"
+        >
+
+          <label data-i18n="finishAt">
+            Tugash vaqti
+          </label>
+
+          <input
+            type="datetime-local"
+            id="testScheduleEnd"
+          >
+
+        </div>
+
+      </div>
+
+
+      <div class="question-builder-head">
+
+        <div>
+
+          <span
+            class="question-builder-kicker"
+            data-i18n="builderTitle"
+          >
+            TEST KONSTRUKTORI
+          </span>
+
+          <strong data-i18n="questions">
+            Savollar
+          </strong>
+
+        </div>
+
+
+        <span
+          id="questionCountLabel"
+          class="question-count-label"
+          data-i18n="questionCount"
+        >
+          0 ta savol
+        </span>
+
+      </div>
+
+
+      <div
+        id="testQuestionsBox"
+        class="question-builder"
+      ></div>
+
+
+      <div class="tp-row">
+
+        <button
+          type="button"
+          id="addQuestionBtn"
+          data-i18n="btnAddQuestion"
+        >
+          + Savol qo'shish
+        </button>
+
+
+        <button
+          type="button"
+          class="primary"
+          id="saveTestBtn"
+          data-i18n="btnSaveTest"
+        >
+          Testni saqlash
+        </button>
+
+      </div>
+
     </div>
+
+
+    <!-- ==================== NATIJALAR ==================== -->
+
+    <div class="tp-pane" id="tpResults">
+
+      <div
+        id="parentResultsLookup"
+        style="display:none;"
+      >
+
+        <div class="tp-field">
+
+          <label>
+            Farzand username'i
+          </label>
+
+          <input
+            type="text"
+            id="parentChildUsername"
+            maxlength="20"
+            placeholder="Masalan: ali123"
+          >
+
+        </div>
+
+
+        <button
+          type="button"
+          class="primary"
+          id="viewChildResultsBtn"
+        >
+          Farzand natijalarini ko'rish
+        </button>
+
+
+        <p
+          id="parentResultsMsg"
+          class="muted-note"
+          style="margin-top:10px;"
+        ></p>
+
+      </div>
+
+
+      <div
+        class="tp-row"
+        id="resultsFiltersRow"
+      >
+
+        <select id="resultsClassSelect"></select>
+
+        <select id="resultsTestSelect"></select>
+
+      </div>
+
+
+      <div
+        id="teacherKpis"
+        class="teacher-kpis"
+      ></div>
+
+
+      <div class="teacher-chart-wrap">
+
+        <div class="teacher-chart-head">
+
+          <span data-i18n="classResult">
+            Sinf natijasi
+          </span>
+
+          <span id="teacherChartLegend">
+            Avg: 0%
+          </span>
+
+        </div>
+
+
+        <div
+          id="teacherChart"
+          class="teacher-chart"
+        ></div>
+
+      </div>
+
+
+      <div
+        id="teacherSummaryList"
+        class="teacher-summary-list"
+      ></div>
+
+
+      <div class="teacher-export-row">
+
+        <button
+          type="button"
+          id="exportTeacherCsvBtn"
+          class="export-btn"
+          data-i18n="exportCsv"
+        >
+          Export CSV
+        </button>
+
+      </div>
+
+
+      <div
+        id="teacherStudentsInsight"
+        class="teacher-detail-grid"
+      ></div>
+
+
+      <div id="resultsTableWrap"></div>
+
+    </div>
+
+
+    <!-- ==================== QO'SHILISH ==================== -->
+
+    <div class="tp-pane" id="tpJoin">
+
+      <p
+        class="muted-note"
+        data-i18n="joinPanelHint"
+      >
+        O'quvchi yoki ota-ona o'qituvchi kodini kiritadi.
+        Ota-ona farzand username'ini ham yozadi.
+      </p>
+
+
+      <div class="tp-field">
+
+        <label data-i18n="classCode">
+          Sinf kodi
+        </label>
+
+        <input
+          type="text"
+          id="tpJoinCode"
+          maxlength="8"
+          style="text-transform:uppercase;"
+        >
+
+      </div>
+
+
+      <div class="tp-field">
+
+        <label data-i18n="childUsername">
+          Farzand username (ixtiyoriy)
+        </label>
+
+        <input
+          type="text"
+          id="tpJoinChild"
+          maxlength="20"
+        >
+
+      </div>
+
+
+      <button
+        type="button"
+        class="primary"
+        id="tpJoinBtn"
+        data-i18n="btnJoin"
+      >
+        Qo'shilish
+      </button>
+
+
+      <div
+        id="tpJoinMsg"
+        class="muted-note"
+        style="margin-top:10px;"
+      ></div>
+
+    </div>
+
+
+    <!-- ==================== O'QUVCHILARNI IMPORT QILISH ==================== -->
+
+    <div class="tp-pane" id="tpImport">
+
+      <div class="tp-card">
+
+        <h3
+          style="margin-top:0; color:var(--p2);"
+        >
+          📊 O'quvchilarni Excel orqali qo'shish
+        </h3>
+
+
+        <p class="muted-note">
+
+          Excel fayl yuklang.
+          Tizim har bir o'quvchi uchun avtomatik
+          username va xavfsiz parol yaratadi.
+
+        </p>
+
+
+        <div
+          class="tp-card"
+          style="margin-top:14px;"
+        >
+
+          <strong>
+            Excel formati:
+          </strong>
+
+
+          <div
+            class="muted-note"
+            style="margin-top:8px;"
+          >
+            Faylda quyidagi 3 ta ustun bo'lishi kerak:
+          </div>
+
+
+          <div
+            style="
+              display:grid;
+              grid-template-columns:repeat(3,1fr);
+              gap:8px;
+              margin-top:10px;
+            "
+          >
+
+            <div
+              class="tp-field"
+              style="margin:0;"
+            >
+
+              <input
+                value="Ism"
+                readonly
+              >
+
+            </div>
+
+
+            <div
+              class="tp-field"
+              style="margin:0;"
+            >
+
+              <input
+                value="Familiya"
+                readonly
+              >
+
+            </div>
+
+
+            <div
+              class="tp-field"
+              style="margin:0;"
+            >
+
+              <input
+                value="TugilganYil"
+                readonly
+              >
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="tp-field"
+          style="margin-top:16px;"
+        >
+
+          <label>
+            Excel fayl
+          </label>
+
+
+          <input
+            type="file"
+            id="studentExcelFile"
+            accept=".xlsx,.xls"
+          >
+
+        </div>
+
+
+        <button
+          type="button"
+          class="primary"
+          id="importStudentsBtn"
+        >
+          📥 O'quvchilarni yaratish
+        </button>
+
+
+        <div
+          id="studentImportStatus"
+          class="muted-note"
+          style="margin-top:12px;"
+        ></div>
+
+
+        <div
+          id="studentImportResults"
+          style="margin-top:16px;"
+        ></div>
+
+      </div>
+
+    </div>
+
   </div>
 </div>
 
