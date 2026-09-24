@@ -8,6 +8,7 @@ const usersRoutes = require('./routes/users.routes');
 const leaderboardRoutes = require('./routes/leaderboard.routes');
 const classesRoutes = require('./routes/classes.routes');
 const aiRoutes = require('./routes/ai.routes');
+const studentImportRoutes = require('./routes/student-import.routes');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -37,6 +38,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api', classesRoutes);
 app.use('/api', leaderboardRoutes); // /api/results, /api/leaderboard/:mode, /api/achievements/:name
 app.use('/api/ai', aiRoutes);
+app.use('/api/student-import', studentImportRoutes);
 
 app.use((req, res) => res.status(404).json({ error: 'Topilmadi.' }));
 
