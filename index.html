@@ -3298,6 +3298,87 @@ async function openTeacherPanel(){
     switchTpTab('results');
   }
 }
+
+async function importStudentsFromExcel() {
+  const fileInput = document.getElementById('studentExcelFile');
+  const status = document.getElementById('studentImportStatus');
+  const results = document.getElementById('studentImportResults');
+  const button = document.getElementById('importStudentsBtn');
+
+  const file = fileInput?.files?.[0];
+
+  if (!file) {
+    status.textContent = 'Avval Excel faylni tanlang.';
+    return;
+  }
+
+  try {
+    button.disabled = true;
+    button.textContent = '⏳ O‘quvchilar yaratilmoqda...';
+
+    status.textContent = 'Excel fayl yuklanmoqda...';
+    results.innerHTML = '';
+
+    const data = await window.BilimDueliAPI.StudentImport.importExcel(file);
+
+    status.textContent = data.message || 'O‘quvchilar yaratildi.';
+
+    if (Array.isArray(data.students) && data.students.length) {
+      results.innerHTML = `
+        <div class="tp-card">
+          <h3 style="margin-top:0;">Yaratilgan akkauntlar</h3>
+
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="text-align:left; padding:8px;">Ism</th>
+                  <th style="text-align:left; padding:8px;">Familiya</th>
+                  <th style="text-align:left; padding:8px;">Tug‘ilgan yil</th>
+                  <th style="text-align:left; padding:8px;">Username</th>
+                  <th style="text-align:left; padding:8px;">Parol</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                ${data.students.map(student => `
+                  <tr>
+                    <td style="padding:8px;">${escapeHtml(student.firstName)}</td>
+                    <td style="padding:8px;">${escapeHtml(student.lastName)}</td>
+                    <td style="padding:8px;">${escapeHtml(student.birthYear)}</td>
+                    <td style="padding:8px;">
+                      <strong>${escapeHtml(student.username)}</strong>
+                    </td>
+                    <td style="padding:8px;">
+                      <strong>${escapeHtml(student.password)}</strong>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    if (Array.isArray(data.skipped) && data.skipped.length) {
+      status.textContent += ` ${data.skipped.length} ta qator o'tkazib yuborildi.`;
+    }
+
+    fileInput.value = '';
+
+  } catch (error) {
+    console.error(error);
+    status.textContent = error.message || 'Excel import qilishda xatolik yuz berdi.';
+  } finally {
+    button.disabled = false;
+    button.textContent = '📥 O‘quvchilarni yaratish';
+  }
+}
+document.getElementById('importStudentsBtn')?.addEventListener(
+  'click',
+  importStudentsFromExcel
+);
 function closeTeacherPanel(){ document.getElementById('teacherOverlay').classList.remove('open'); }
 function switchTpTab(id){
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tp === id));

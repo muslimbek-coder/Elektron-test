@@ -154,6 +154,49 @@
     },
   };
 
+const StudentImport = {
+  async importExcel(file) {
+    if (!file) {
+      throw new Error('Excel fayl tanlanmagan.');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = getToken();
+
+    const headers = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(
+      BACKEND_URL + '/api/student-import/excel',
+      {
+        method: 'POST',
+        headers,
+        body: formData,
+      }
+    );
+
+    let data = null;
+
+    try {
+      data = await res.json();
+    } catch (e) {}
+
+    if (!res.ok) {
+      throw new Error(
+        (data && data.error) ||
+        `Import xatosi (${res.status})`
+      );
+    }
+
+    return data;
+  },
+};
+
   const Parent = {
     async results(childUsername) {
       const data = await apiFetch(`/api/parent/results/${encodeURIComponent(childUsername)}`);
@@ -225,6 +268,7 @@ window.BilimDueliAPI = {
   Auth,
   Results,
   Classes,
+  StudentImport,
   Parent,
 
   AI: {
