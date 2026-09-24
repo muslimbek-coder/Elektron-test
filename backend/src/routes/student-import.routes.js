@@ -80,19 +80,21 @@ function generateUniqueUsername(firstName, lastName, birthYear) {
 }
 
 // Excel'dagi ustun nomini topish
+// Excel'dagi ustun nomini topish (bo'sh joy, _ , - va apostroflarga qaramaydi)
+function normalizeKey(value) {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/['"`ʻʼ’‘]/g, '')
+    .replace(/[\s_\-]+/g, '');
+}
+
 function findColumn(row, possibleNames) {
-  const keys = Object.keys(row);
+  const wanted = possibleNames.map(normalizeKey);
 
-  for (const key of keys) {
-    const normalizedKey = String(key)
-      .trim()
-      .toLowerCase()
-      .replace(/['"`ʻʼ’‘]/g, '');
-
-    for (const name of possibleNames) {
-      if (normalizedKey === name) {
-        return key;
-      }
+  for (const key of Object.keys(row)) {
+    if (wanted.includes(normalizeKey(key))) {
+      return key;
     }
   }
 
