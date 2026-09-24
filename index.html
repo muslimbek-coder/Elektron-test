@@ -2513,6 +2513,7 @@
       <button type="button" class="tp-tab" data-tp="create" data-i18n="tabCreateTest">Test yaratish</button>
       <button type="button" class="tp-tab" data-tp="results" data-i18n="tabResults">Natijalar</button>
       <button type="button" class="tp-tab" data-tp="join" data-i18n="tabJoin">Qo'shilish</button>
+      <button type="button" class="tp-tab" data-tp="import">📊 O'quvchilarni import qilish</button>
     </div>
     <div class="tp-pane active" id="tpClasses">
       <div id="teacherClassBuilder">
@@ -2647,6 +2648,7 @@
         <label data-i18n="classCode">Sinf kodi</label>
         <input type="text" id="tpJoinCode" maxlength="8" style="text-transform:uppercase;">
       </div>
+      
       <div class="tp-field">
         <label data-i18n="childUsername">Farzand username (ixtiyoriy)</label>
         <input type="text" id="tpJoinChild" maxlength="20">
@@ -2656,7 +2658,74 @@
     </div>
   </div>
 </div>
+<div class="tp-pane" id="tpImport">
+  <div class="tp-card">
+    <h3 style="margin-top:0; color:var(--p2);">
+      📊 O'quvchilarni Excel orqali qo'shish
+    </h3>
 
+    <p class="muted-note">
+      Excel fayl yuklang. Tizim har bir o'quvchi uchun avtomatik
+      username va xavfsiz parol yaratadi.
+    </p>
+
+    <div class="tp-card" style="margin-top:14px;">
+      <strong>Excel formati:</strong>
+
+      <div class="muted-note" style="margin-top:8px;">
+        Faylda quyidagi 3 ta ustun bo'lishi kerak:
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:8px;
+        margin-top:10px;
+      ">
+        <div class="tp-field" style="margin:0;">
+          <input value="Ism" readonly>
+        </div>
+
+        <div class="tp-field" style="margin:0;">
+          <input value="Familiya" readonly>
+        </div>
+
+        <div class="tp-field" style="margin:0;">
+          <input value="TugilganYil" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div class="tp-field" style="margin-top:16px;">
+      <label>Excel fayl</label>
+
+      <input
+        type="file"
+        id="studentExcelFile"
+        accept=".xlsx,.xls"
+      >
+    </div>
+
+    <button
+      type="button"
+      class="primary"
+      id="importStudentsBtn"
+    >
+      📥 O'quvchilarni yaratish
+    </button>
+
+    <div
+      id="studentImportStatus"
+      class="muted-note"
+      style="margin-top:12px;"
+    ></div>
+
+    <div
+      id="studentImportResults"
+      style="margin-top:16px;"
+    ></div>
+  </div>
+</div>
 <!-- To'liq profil tahriri -->
 <div class="modal-overlay" id="profileOverlay">
   <div class="modal-box profile-stage">
@@ -3232,7 +3301,13 @@ async function openTeacherPanel(){
 function closeTeacherPanel(){ document.getElementById('teacherOverlay').classList.remove('open'); }
 function switchTpTab(id){
   document.querySelectorAll('.tp-tab').forEach(b => b.classList.toggle('active', b.dataset.tp === id));
-  const map = { classes:'tpClasses', create:'tpCreate', results:'tpResults', join:'tpJoin' };
+  const map = {
+  classes:'tpClasses',
+  create:'tpCreate',
+  results:'tpResults',
+  join:'tpJoin',
+  import:'tpImport'
+};
   document.querySelectorAll('.tp-pane').forEach(p => p.classList.remove('active'));
   const pane = document.getElementById(map[id]);
   if (pane) pane.classList.add('active');
@@ -3399,6 +3474,8 @@ function renderTeacherPanel(){
   document.getElementById('teacherClassBuilder')?.style.setProperty('display', isTeacher ? 'block' : 'none');
   document.getElementById('parentResultsLookup')?.style.setProperty('display', isParent ? 'block' : 'none');
   document.querySelector('[data-tp="create"]')?.style.setProperty('display', isTeacher ? '' : 'none');
+  document.querySelector('[data-tp="import"]')?.style.setProperty('display', isTeacher ? '' : 'none');
+  document.getElementById('tpImport')?.style.setProperty('display', isTeacher ? '' : 'none');
   document.querySelector('[data-tp="join"]')?.style.setProperty('display', 'none');
   document.getElementById('tpCreate')?.style.setProperty('display', isTeacher ? '' : 'none');
   document.getElementById('tpJoin')?.style.setProperty('display', 'none');
