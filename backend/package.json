@@ -1,7 +1,7 @@
 {
   "name": "bilim-dueli-backend",
   "version": "1.0.0",
-  "description": "Bilim Dueli Pro uchun backend: ro'yxatdan o'tish/login, profil, reyting (leaderboard), yutuqlar va real onlayn duel (Socket.io).",
+  "description": "Elektron Test uchun backend: ro'yxatdan o'tish/login, profil, reyting (leaderboard), yutuqlar va real onlayn duel (Socket.io).",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {

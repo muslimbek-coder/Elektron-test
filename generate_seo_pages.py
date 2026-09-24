@@ -96,7 +96,7 @@ def page_shell(title, description, canonical, body, jsonld_list, root="../../"):
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{description}">
 <meta property="og:url" content="{canonical}">
-<meta property="og:site_name" content="Bilim Dueli Pro">
+<meta property="og:site_name" content="Elektron Test">
 <meta property="og:locale" content="uz_UZ">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{title}">
@@ -108,7 +108,7 @@ def page_shell(title, description, canonical, body, jsonld_list, root="../../"):
 <div class="wrap">
 {body}
 <footer>
-  <p>© Bilim Dueli Pro — <a href="{root}">Bosh sahifa</a> | <a href="{root}sinf/">Barcha sinflar</a></p>
+  <p>© Elektron Test — <a href="{root}">Bosh sahifa</a> | <a href="{root}sinf/">Barcha sinflar</a></p>
 </footer>
 </div>
 </body>
@@ -138,8 +138,8 @@ out_path = os.path.join(OUT, "sinf")
 os.makedirs(out_path, exist_ok=True)
 with open(os.path.join(out_path,"index.html"),"w",encoding="utf-8") as f:
     f.write(page_shell(
-        "Barcha sinflar uchun test va savollar — Bilim Dueli Pro",
-        "1-11 sinflar bo'yicha barcha fanlardan bepul test savollari, viktorina va bilim duellari. Sinfingizni tanlang va boshlang.",
+        "Barcha sinflar uchun test va savollar — Elektron Test",
+        "1-11 sinflar bo'yicha barcha fanlardan bepul test savollari, viktorina va elektron testlari. Sinfingizni tanlang va boshlang.",
         f"{DOMAIN}/sinf/",
         body, jsonld, root="../"))
 
@@ -177,7 +177,7 @@ for g in grades:
     }]
     with open(os.path.join(gdir, "index.html"), "w", encoding="utf-8") as f:
         f.write(page_shell(
-            f"{GRADE_LABEL(gi)} uchun testlar — barcha fanlar | Bilim Dueli Pro",
+            f"{GRADE_LABEL(gi)} uchun testlar — barcha fanlar | Elektron Test",
             f"{GRADE_LABEL(gi)} o'quvchilari uchun {len(subj_names)} fan bo'yicha bepul test va viktorina savollari. Fanni tanlang, testni bepul yeching.",
             f"{DOMAIN}/sinf/{g}/",
             body, jsonld, root="../../"
@@ -203,7 +203,7 @@ for g in grades:
         body = f"""
 <nav class="breadcrumb"><a href="../../../">Bosh sahifa</a> / <a href="../../">Sinflar</a> / <a href="../">{GRADE_LABEL(gi)}</a> / {html.escape(s)}</nav>
 <h1>{GRADE_LABEL(gi)} <span>{html.escape(s)}</span> fanidan testlar</h1>
-<p class="lead">{GRADE_LABEL(gi)} o'quvchilari uchun {html.escape(s)} fanidan {len(qas)} ta test savoli. Bilimingizni tekshiring, do'stlaringiz bilan bilim dueliga chiqing yoki yakka tartibda mashq qiling — barchasi bepul.</p>
+<p class="lead">{GRADE_LABEL(gi)} o'quvchilari uchun {html.escape(s)} fanidan {len(qas)} ta test savoli. Bilimingizni tekshiring, do'stlaringiz bilan elektron testiga chiqing yoki yakka tartibda mashq qiling — barchasi bepul.</p>
 <a class="cta" href="{cta_href}">🎮 {html.escape(s)} testini boshlash</a>
 <h2>Namuna savollar</h2>
 {faq_html}
@@ -227,8 +227,8 @@ for g in grades:
         ]
         with open(os.path.join(sdir, "index.html"), "w", encoding="utf-8") as f:
             f.write(page_shell(
-                f"{GRADE_LABEL(gi)} {s} testlari — bepul savollar | Bilim Dueli Pro",
-                f"{GRADE_LABEL(gi)} {s} fanidan bepul test savollari va javoblari. Bilim Dueli Pro'da {s} bo'yicha viktorina o'ynang.",
+                f"{GRADE_LABEL(gi)} {s} testlari — bepul savollar | Elektron Test",
+                f"{GRADE_LABEL(gi)} {s} fanidan bepul test savollari va javoblari. Elektron Test'da {s} bo'yicha viktorina o'ynang.",
                 f"{DOMAIN}/sinf/{g}/{slug}/",
                 body, jsonld, root="../../../"
             ))

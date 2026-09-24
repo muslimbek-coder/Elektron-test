@@ -1,6 +1,6 @@
 # index.html'ni backendga ulash — qadam-baqadam
 
-Bu qo'llanma sizning mavjud `index.html` (Bilim Dueli Pro) faylidagi qaysi funksiyalarni
+Bu qo'llanma sizning mavjud `index.html` (Elektron Test) faylidagi qaysi funksiyalarni
 qanday o'zgartirish kerakligini ko'rsatadi. Fayl juda katta (9500+ qator) bo'lgani uchun
 avtomatik almashtirish xavfli — shuning uchun har bir joyni qo'lda, tekshirib almashtirishni
 tavsiya qilaman. Har bir bo'lim uchun **qidiradigan matn** va **nima bilan almashtirish**

@@ -1,5 +1,5 @@
 /**
- * Bilim Dueli — backend bilan ishlash uchun tayyor modul.
+ * Elektron Test — backend bilan ishlash uchun tayyor modul.
  *
  * index.html ga socket.io-client skriptidan KEYIN, va bu faylni <script> orqali ulang:
  *

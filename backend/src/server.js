@@ -13,6 +13,6 @@ const io = new Server(server, {
 attachSocketHandlers(io);
 
 server.listen(config.port, () => {
-  console.log(`Bilim Dueli backend ${config.port}-portda ishga tushdi.`);
+  console.log(`Elektron Test backend ${config.port}-portda ishga tushdi.`);
   console.log(`Ruxsat etilgan frontend manzillari: ${config.corsOrigins.join(', ')}`);
 });

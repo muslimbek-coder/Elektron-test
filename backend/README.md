@@ -1,4 +1,4 @@
-# Bilim Dueli — Backend
+# Elektron Test — Backend
 
 Bu backend saytingizdagi (`bilimler-dueli-.zip`) localStorage'ga asoslangan
 foydalanuvchi/reyting tizimini almashtirib, **markaziy** (barcha qurilmalarda bir xil)
