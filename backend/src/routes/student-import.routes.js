@@ -227,7 +227,7 @@ router.post(
         }
       });
 
-      importStudents();
+      importStudents(rows);
 
       return res.json({
         ok: true,
