@@ -152,6 +152,14 @@
         body: JSON.stringify(result),
       });
     },
+        async startTest(classId, testId) {
+      return apiFetch(`/api/classes/${encodeURIComponent(classId)}/tests/${encodeURIComponent(testId)}/start`, {
+        method: 'POST',
+      });
+    },
+    async myAttempts(classId) {
+      return apiFetch(`/api/classes/${encodeURIComponent(classId)}/attempts/mine`);
+    },
   };
 
 const StudentImport = {

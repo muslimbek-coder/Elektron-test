@@ -475,6 +475,7 @@
   .opt.wrong{ background:#3a1420; border-color:var(--warn); color:var(--warn); }
   .opt.wrong::before{ border-color:var(--warn); color:var(--warn); }
   .opt:disabled{ cursor:default; }
+  .opt.chosen{ border-color:var(--gold); background:var(--panel2); }
   
   #result{ display:none; text-align:center; }
   #result h2{ font-family: var(--font-poster); font-weight:400; letter-spacing:1px; font-size:clamp(30px,7vw,46px); margin:0 0 24px; }
@@ -3664,6 +3665,13 @@ async function syncRemoteClasses(){
     for (const cls of classes) {
       const testData = await window.BilimDueliAPI.Classes.tests(cls.id);
       if (Array.isArray(testData.tests)) tests.push(...testData.tests);
+            if (currentUserRole() !== 'teacher') {
+        try {
+          const attempts = await window.BilimDueliAPI.Classes.myAttempts(cls.id);
+          const merged = new Set(getTakenTests().concat((attempts.testIds || []).map(String)));
+          writeStore(takenKey(), [...merged]);
+        } catch (e) {}
+      }
       if (currentUserRole() === 'teacher') {
         const resultData = await window.BilimDueliAPI.Classes.results(cls.id);
         if (Array.isArray(resultData.results)) results.push(...resultData.results);
@@ -4606,7 +4614,8 @@ function renderClassTestsMini(){
   }
   const joinedTestIds = new Set(joined.map(c => String(c.id)));
   const allTests = getClassTests();
-  const activeTests = allTests.filter(x => joinedTestIds.has(String(x.classId)) && isTestActive(x));
+  const takenIds = getTakenTests();
+  const activeTests = allTests.filter(x => joinedTestIds.has(String(x.classId)) && isTestActive(x) && !takenIds.includes(String(x.id)));
   const expiredTests = allTests.filter(isTestExpired);
   if (expiredTests.length) writeStore(TEST_KEY, allTests.filter(x => !isTestExpired(x)));
   if (!activeTests.length) { box.innerHTML = ''; return; }
@@ -4615,15 +4624,50 @@ function renderClassTestsMini(){
   ).join('');
 }
 function startAssignedTest(id){
+function takenKey(){ return 'bdTaken:' + String(getCurrentUser() || '').toLowerCase(); }
+function getTakenTests(){ return readStore(takenKey(), []).map(String); }
+
+async function startAssignedTest(id){
   const test = getClassTests().find(x => x.id === id);
   if (!test) return;
   const cls = getClasses().find(c => c.id === test.classId);
+  const isTeacher = currentUserRole() === 'teacher';
+
+  if (!getCurrentUser()) {
+    showFxToast(t('needLogin'), 'var(--gold)');
+    return;
+  }
+
+  // Test faqat 1 marta ishlanadi (o'qituvchi ko'rib chiqishi mumkin)
+  if (!isTeacher) {
+    const taken = getTakenTests();
+    if (taken.includes(String(test.id))) {
+      showFxToast('Siz bu testni allaqachon topshirgansiz.', 'var(--warn)');
+      renderClassTestsMini();
+      return;
+    }
+    try {
+      if (window.BilimDueliAPI?.Classes && !String(test.classId).startsWith('c')) {
+        await window.BilimDueliAPI.Classes.startTest(test.classId, test.id);
+      }
+      writeStore(takenKey(), taken.concat(String(test.id)));
+    } catch (error) {
+      if (error.status === 409) {
+        writeStore(takenKey(), taken.concat(String(test.id)));
+        renderClassTestsMini();
+      }
+      showFxToast(error.message || 'Testni boshlab bo\'lmadi.', 'var(--warn)');
+      return;
+    }
+  }
+
   activeClassTest = test;
   gameMode = 'exam';
   grade = cls ? cls.grade : (grade || 1);
   selectedSubject = null;
   beginMatch(false);
   closeTeacherPanel();
+}
 }
 async function saveAssignedResult(){
   if (!activeClassTest) return;
@@ -9528,9 +9572,36 @@ function lockOptions(chosenBtn){
   const opts = document.querySelectorAll('#optionsBox .opt');
   opts.forEach(o=>{
     o.disabled = true;
+    if (activeClassTest) {              // sinf testi: to'g'ri/xatoni ko'rsatmaymiz
+      if (o === chosenBtn) o.classList.add('chosen');
+      return;
+    }
     if(String(o.textContent) === String(currentAnswer)){ o.classList.add('correct'); } else if(o === chosenBtn){ o.classList.add('wrong'); }
   });
 }
+function settleClassTestRound(correct){
+  p1.total++;
+  if(!subjectStats[currentSubjectName]) subjectStats[currentSubjectName] = { correct:0, total:0 };
+  subjectStats[currentSubjectName].total++;
+  if (correct) {
+    subjectStats[currentSubjectName].correct++;
+    p1.correct++; p1.combo++;
+    if (p1.combo > p1.maxCombo) p1.maxCombo = p1.combo;
+    p1.score += 10 + (p1.combo > 1 ? (p1.combo - 1) * 2 : 0);
+  } else {
+    p1.combo = 0;
+    mistakes.push({
+      player: p1.name, q: currentQuestionText, a: currentAnswer,
+      e: currentExplanation, o: currentOptions, s: currentSubjectName
+    });
+  }
+  round++;
+  scheduleNext(true);   // to'g'ri yoki xatoligidan qat'i nazar bir xil kutish vaqti
+}
+
+function settleRound(correct){
+  if (activeClassTest) { settleClassTestRound(correct); return; }
+  const track = document.querySelectorAll('.node');
 
 function settleRound(correct){
   const track = document.querySelectorAll('.node');
@@ -9846,6 +9917,9 @@ function finishGame(){
 
   if (examRing) examRing.style.display = gameMode === 'exam' ? 'block' : 'none';
   if (retryBtn) retryBtn.style.display = (gameMode === 'exam' && mistakes.length) ? 'inline-block' : 'none';
+    const replayBtn = document.getElementById('replayBtn');
+  if (replayBtn) replayBtn.style.display = activeClassTest ? 'none' : '';
+  if (retryBtn && activeClassTest) retryBtn.style.display = 'none';
 
   if (gameMode === 'exam') {
     title.innerHTML = examRetrying ? `Qayta ishlash yakunlandi — <span style="color:var(--gold);">${p1Acc}%</span>` : `Imtihon natijasi — <span style="color:var(--gold);">${p1Acc}%</span>`;
@@ -9942,12 +10016,19 @@ function finishGame(){
 }
 
 function renderWeakAreas() {
-  const entries = Object.entries(subjectStats).map(([subject, s]) => ({
-    subject,
-    correct: s.correct,
-    total: s.total,
-    pct: s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
-  }));
+  const entries = Object.entries(subjectStats).map(function (entry) {
+    const subject = entry[0];
+    const stats = entry[1];
+    const pct = stats.total > 0
+      ? Math.round((stats.correct / stats.total) * 100)
+      : 0;
+    return {
+      subject: subject,
+      correct: stats.correct,
+      total: stats.total,
+      pct: pct
+    };
+  });
   entries.sort((a, b) => a.pct - b.pct);
 
   const worstPct = entries.length ? entries[0].pct : null;
@@ -9955,11 +10036,11 @@ function renderWeakAreas() {
 
   const list = document.getElementById('weakList');
   if (entries.length === 0) {
-    list.innerHTML = '<p class="lb-empty">Ma\'lumot yo\'q.</p>';
+    list.innerHTML = '<p class="lb-empty">Ma&#39;lumot yo&#39;q.</p>';
     return;
   }
 
-  list.innerHTML = entries.map(e => {
+  list.innerHTML = entries.map(function (e) {
     let barColor = 'var(--p2)';
     if (e.pct < 50) barColor = 'var(--warn)';
     else if (e.pct < 75) barColor = 'var(--gold)';
@@ -9968,22 +10049,27 @@ function renderWeakAreas() {
     if (e.pct === worstPct && worstPct < 100) badge = '<span class="weak-badge">Eng zaif</span>';
     else if (e.pct === bestPct && bestPct === 100 && entries.length > 1) badge = '<span class="weak-badge" style="background:var(--p2-dim); color:var(--p2);">Eng kuchli</span>';
 
-    const cardClass = (e.pct === worstPct && worstPct < 100) ? 'worst' : (e.pct === bestPct && bestPct === 100) ? 'best' : '';
+    let cardClass = '';
+    if (e.pct === worstPct && worstPct < 100) {
+      cardClass = 'worst';
+    } else if (e.pct === bestPct && bestPct === 100) {
+      cardClass = 'best';
+    }
 
     return `
       <div class="weak-item ${cardClass}">
         <div class="w-top">
-          <span class="w-name">${escapeHtml(e.subject)} ${badge}</span>
+          <span class="w-name">${escapeHtmlValue(e.subject)} ${badge}</span>
           <span class="w-pct" style="color:${barColor};">${e.pct}%</span>
         </div>
         <div class="weak-bar"><div class="weak-bar-fill" style="width:${e.pct}%; background:${barColor};"></div></div>
-        <div class="w-sub">${e.correct} / ${e.total} to'g'ri javob</div>
+        <div class="w-sub">${e.correct} / ${e.total} to&#39;g&#39;ri javob</div>
       </div>
     `;
   }).join('');
 }
 
-function escapeHtml(str) {
+function escapeHtmlValue(str) {
   const div = document.createElement('div');
   div.textContent = String(str);
   return div.innerHTML;
@@ -9994,7 +10080,8 @@ document.getElementById('replayBtn').addEventListener('click', ()=>{
   beginMatch(true);
 });
 
-document.getElementById('examRetryBtn')?.addEventListener('click', ()=>{
+const examRetryBtn = document.getElementById('examRetryBtn');
+if (examRetryBtn) examRetryBtn.addEventListener('click', ()=>{
   if (!lastExamQuestions.length) return;
   examRetrying = true;
   beginMatch(true);
@@ -10680,6 +10767,8 @@ function fxWinBurst(){
     }, i*90);
   }
   showFxToast(t('winToast'), '#ffd166');
+}
+
 }
 
 refreshSetupUI();

@@ -295,6 +295,55 @@ router.post('/classes/:classId/tests', requireAuth, (req, res) => {
   }
 });
 
+// O'quvchi testni boshlaydi. Har bir test faqat 1 marta ishlanadi.
+router.post('/classes/:classId/tests/:testId/start', requireAuth, (req, res) => {
+  try {
+    const classId = Number(req.params.classId);
+    const testId = String(req.params.testId);
+
+    const cls = db.prepare('SELECT * FROM classes WHERE id = ?').get(classId);
+    if (!cls) return res.status(404).json({ error: 'Sinf topilmadi.' });
+
+    // O'qituvchi o'z testini ko'rib chiqishi mumkin, hisobga olinmaydi
+    if (cls.teacher_username.toLowerCase() === req.user.username.toLowerCase()) {
+      return res.json({ ok: true, preview: true });
+    }
+
+    const isMember = db.prepare(
+      'SELECT 1 FROM class_members WHERE class_id=? AND username=? COLLATE NOCASE'
+    ).get(classId, req.user.username);
+    if (!isMember) return res.status(403).json({ error: 'Siz bu sinf a\'zosi emassiz.' });
+
+    const test = db.prepare('SELECT id FROM class_tests WHERE id = ? AND class_id = ?').get(Number(testId), classId);
+    if (!test) return res.status(404).json({ error: 'Test topilmadi.' });
+
+    const info = db.prepare(
+      'INSERT OR IGNORE INTO class_test_attempts (class_id, test_id, username) VALUES (?, ?, ?)'
+    ).run(classId, testId, req.user.username);
+
+    if (info.changes === 0) {
+      return res.status(409).json({ error: 'Siz bu testni allaqachon topshirgansiz. Test faqat 1 marta ishlanadi.' });
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Testni boshlashda xatolik yuz berdi.' });
+  }
+});
+
+// O'quvchi allaqachon boshlagan testlar ro'yxati
+router.get('/classes/:classId/attempts/mine', requireAuth, (req, res) => {
+  try {
+    const rows = db.prepare(
+      'SELECT test_id FROM class_test_attempts WHERE class_id = ? AND username = ? COLLATE NOCASE'
+    ).all(Number(req.params.classId), req.user.username);
+    res.json({ testIds: rows.map((r) => r.test_id) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Xatolik yuz berdi.' });
+  }
+});
+
 router.get('/classes/:classId/results', requireAuth, (req, res) => {
   try {
     const classId = Number(req.params.classId);
@@ -336,6 +385,12 @@ router.post('/classes/:classId/results', requireAuth, (req, res) => {
     }
 
     const info = db.prepare(`
+          if (testId) {
+      const already = db.prepare(
+        'SELECT 1 FROM class_results WHERE class_id=? AND test_id=? AND username=? COLLATE NOCASE'
+      ).get(classId, String(testId), req.user.username);
+      if (already) return res.status(409).json({ error: 'Bu test uchun natija allaqachon saqlangan.' });
+    }
       INSERT INTO class_results (class_id, test_id, username, score, total, correct, pct, subjects)
       VALUES (@classId, @testId, @username, @score, @total, @correct, @pct, @subjects)
     `).run({

@@ -121,4 +121,15 @@ const classTestColumns = db.prepare('PRAGMA table_info(class_tests)').all().map(
 if (!classTestColumns.includes('start_at')) db.exec('ALTER TABLE class_tests ADD COLUMN start_at TEXT');
 if (!classTestColumns.includes('end_at')) db.exec('ALTER TABLE class_tests ADD COLUMN end_at TEXT');
 
+db.exec(`
+CREATE TABLE IF NOT EXISTS class_test_attempts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  class_id INTEGER NOT NULL,
+  test_id TEXT NOT NULL,
+  username TEXT NOT NULL COLLATE NOCASE,
+  started_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(test_id, username)
+);
+`);
+
 module.exports = db;
