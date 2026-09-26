@@ -48,8 +48,6 @@ router.post('/register', async (req, res) => {
       if (!submitted || !expected || submitted !== expected) {
         return res.status(403).json({
           error: "O'qituvchi kodi noto'g'ri.",
-          debug_submitted: submitted,
-          debug_expected: expected,
         });
       }
       finalRole = 'teacher';

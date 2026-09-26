@@ -14,7 +14,7 @@ services:
       - key: JWT_EXPIRES_IN
         value: 30d
       - key: TEACHER_INVITE_CODE
-        value: Bilim2026Ustoz
+        value: Ustoz2026
       - key: CORS_ORIGIN
         value: https://elektron-test.vercel.app
       - key: DB_PATH
