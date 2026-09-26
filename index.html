@@ -3256,6 +3256,8 @@
 </div>
 
 <script>
+window.checkAuthOrShowModal = window.checkAuthOrShowModal || function () { return true; };
+
 let grade = null;
 let gameMode = 'pvp';
 let versusType = 'pvp';
@@ -4621,7 +4623,6 @@ function renderClassTestsMini(){
     `<button type="button" class="radio-btn assigned-test-btn" data-test-id="${escapeHtml(x.id)}" style="margin:6px 6px 0 0;">${escapeHtml(x.title)} (${x.questions.length})</button>`
   ).join('');
 }
-function startAssignedTest(id){
 function takenKey(){ return 'bdTaken:' + String(getCurrentUser() || '').toLowerCase(); }
 function getTakenTests(){ return readStore(takenKey(), []).map(String); }
 
@@ -4666,7 +4667,7 @@ async function startAssignedTest(id){
   beginMatch(false);
   closeTeacherPanel();
 }
-}
+
 async function saveAssignedResult(){
   if (!activeClassTest) return;
   const user = getCurrentUser();
@@ -4718,6 +4719,7 @@ const SETTINGS_KEY = 'bilimDueliSettings';
 function checkAuthOrShowModal() {
   return true;
 }
+window.checkAuthOrShowModal = checkAuthOrShowModal;
 
 // Auth modalni ochish uchun umumiy yordamchi funksiya.
 // forced=true bo'lsa (masalan, eski/qulflangan holatlar uchun) yopish tugmasi va qulf yozuvi ko'rsatiladi.
@@ -9656,9 +9658,6 @@ function settleClassTestRound(correct){
 function settleRound(correct){
   if (activeClassTest) { settleClassTestRound(correct); return; }
   const track = document.querySelectorAll('.node');
-
-function settleRound(correct){
-  const track = document.querySelectorAll('.node');
   const node = track[Math.min(round, track.length-1)];
   let activePlayer = (isSoloLike() || currentPlayer === 1) ? p1 : p2;
   activePlayer.total++;
@@ -10123,10 +10122,14 @@ function renderWeakAreas() {
   }).join('');
 }
 
-function escapeHtmlValue(str) {
+function escapeHtml(str) {
   const div = document.createElement('div');
-  div.textContent = String(str);
+  div.textContent = String(str ?? '');
   return div.innerHTML;
+}
+
+function escapeHtmlValue(str) {
+  return escapeHtml(str);
 }
 
 document.getElementById('replayBtn').addEventListener('click', ()=>{
@@ -10340,8 +10343,13 @@ async function refreshCurrentUser() {
 
 function getCurrentUser() {
   if (currentUserCache && currentUserCache.username) return currentUserCache.username;
-  return localStorage.getItem(CURRENT_USER_KEY) || null;
+  try {
+    return localStorage.getItem(CURRENT_USER_KEY) || null;
+  } catch (e) {
+    return null;
+  }
 }
+window.getCurrentUser = getCurrentUser;
 
 function switchAuthTab(tab) {
   const loginForm = document.getElementById('loginForm');
@@ -10823,8 +10831,6 @@ function fxWinBurst(){
     }, i*90);
   }
   showFxToast(t('winToast'), '#ffd166');
-}
-
 }
 
 refreshSetupUI();
