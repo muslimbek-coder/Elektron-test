@@ -1,8 +1,10 @@
 require('dotenv').config();
 
 function parseOrigins(raw) {
-  if (!raw) return ['http://localhost:5500'];
-  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+  const configured = raw
+    ? raw.split(',').map((s) => s.trim()).filter(Boolean)
+    : ['http://localhost:5500'];
+  return [...new Set([...configured, 'https://elektron-test.vercel.app'])];
 }
 
 module.exports = {

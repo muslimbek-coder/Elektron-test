@@ -16,7 +16,7 @@ services:
       - key: TEACHER_INVITE_CODE
         value: Bilim2026Ustoz
       - key: CORS_ORIGIN
-        sync: false
+        value: https://elektron-test.vercel.app
       - key: DB_PATH
         value: /var/data/bilimdueli.db
     disk:
