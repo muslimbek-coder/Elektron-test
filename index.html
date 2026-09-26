@@ -1820,6 +1820,16 @@
     margin:8px 0 22px; padding:16px; border:1px solid var(--line); border-radius:14px;
     background:linear-gradient(135deg, var(--panel), var(--bg2));
   }
+  .daily-challenge{
+    display:grid; grid-template-columns:1fr auto; gap:14px; align-items:center;
+    margin:0 0 22px; padding:16px; border:1px solid rgba(255,209,102,.35); border-radius:14px;
+    background:linear-gradient(135deg, rgba(255,209,102,.13), rgba(33,230,193,.08));
+  }
+  .daily-challenge h3{ margin:0 0 5px; font-size:16px; color:var(--gold); }
+  .daily-challenge p{ margin:0; color:var(--chalk-dim); font-size:13px; line-height:1.45; }
+  .daily-stats{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .daily-stat{ padding:5px 9px; border:1px solid var(--line); border-radius:999px; font-size:11px; color:var(--chalk); }
+  @media(max-width:600px){ .daily-challenge{ grid-template-columns:1fr; } .daily-challenge .primary{ width:100%; } }
   .results-table{ width:100%; border-collapse:collapse; font-size:13px; }
   .results-table th, .results-table td{ border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; }
   .muted-note{ color:var(--chalk-dim); font-size:13px; line-height:1.5; }
@@ -2203,6 +2213,14 @@
   </div>
 
 <div class="card" id="setup">
+    <section class="daily-challenge" aria-labelledby="dailyChallengeTitle">
+      <div>
+        <h3 id="dailyChallengeTitle">🔥 Bugungi challenge</h3>
+        <p id="dailyChallengeText">Bugungi maxsus mashqni bajarib, kunlik seriyani davom ettiring.</p>
+        <div class="daily-stats" id="dailyStats"></div>
+      </div>
+      <button type="button" class="primary" id="dailyChallengeBtn">Bugungi challenge</button>
+    </section>
     <div class="join-class-box" id="classJoinBox">
       <p class="section-label" data-i18n="joinClassTitle">Sinf kodi</p>
       <p class="muted-note" data-i18n="joinClassHint">O'qituvchi bergan kodni kiriting — o'z sinfingiz testlarini ishlang yoki farzand natijasini ko'ring.</p>
@@ -3316,6 +3334,7 @@ const TEST_KEY = 'bilimDueliClassTests';
 const MEMBER_KEY = 'bilimDueliClassMembers';
 const CRESULT_KEY = 'bilimDueliClassResults';
 const PROPOSAL_KEY = 'bilimDueliTestProposals';
+const GAME_HISTORY_KEY = 'bilimDueliGameHistory';
 let currentLang = 'uz';
 let activeClassTest = null;
 let parentViewedChildUsername = '';
@@ -9169,6 +9188,51 @@ function buildGamePool() {
   return basePool;
 }
 
+function getGameHistory() {
+  try {
+    const value = JSON.parse(localStorage.getItem(GAME_HISTORY_KEY) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch (e) { return []; }
+}
+
+function getDailyChallenge() {
+  const date = new Date().toISOString().slice(0, 10);
+  const dayNumber = Math.floor(Date.parse(`${date}T00:00:00Z`) / 86400000);
+  return { date, grade: (dayNumber % 11) + 1, mode: 'solo' };
+}
+
+function renderDailyChallenge() {
+  const challenge = getDailyChallenge();
+  const history = getGameHistory();
+  const completed = history.some(item => item.dailyDate === challenge.date);
+  const text = document.getElementById('dailyChallengeText');
+  const stats = document.getElementById('dailyStats');
+  const button = document.getElementById('dailyChallengeBtn');
+  if (text) text.textContent = `${challenge.grade}-sinf fanlar bo'yicha yakka mashqi · ${completed ? 'Bugun bajarilgan' : 'Hali bajarilmagan'}`;
+  if (stats) stats.innerHTML = `<span class="daily-stat">📅 ${challenge.date}</span><span class="daily-stat">🎯 ${history.length} ta o'yin tarixi</span>`;
+  if (button) button.textContent = completed ? 'Qayta ishlash' : 'Boshlash';
+}
+
+function startDailyChallenge() {
+  const challenge = getDailyChallenge();
+  grade = challenge.grade;
+  selectedSubject = null;
+  gameMode = challenge.mode;
+  document.querySelectorAll('.grade-chip').forEach(chip => chip.classList.toggle('active', String(chip.dataset.grade) === String(grade)));
+  refreshSetupUI();
+  beginMatch(false);
+}
+
+function saveGameHistory() {
+  const history = getGameHistory();
+  history.unshift({
+    date: new Date().toISOString(), dailyDate: getDailyChallenge().date,
+    mode: gameMode, grade, subject: selectedSubject, score: p1.score,
+    total: p1.total, correct: p1.correct, accuracy: p1.total ? Math.round(p1.correct / p1.total * 100) : 0
+  });
+  try { localStorage.setItem(GAME_HISTORY_KEY, JSON.stringify(history.slice(0, 50))); } catch (e) {}
+}
+
 document.getElementById('startBtn').addEventListener('click', ()=>{
   activeClassTest = null;
   if (!checkAuthOrShowModal()) return;
@@ -9942,6 +10006,7 @@ function finishGame(){
   if (activeClassTest && getCurrentUser()) {
     saveAssignedResult();
   }
+  if (isSoloLike()) saveGameHistory();
   document.getElementById('game').style.display = 'none';
   document.getElementById('result').style.display = 'block';
   document.getElementById('result').classList.add('celebrate');
@@ -10207,6 +10272,8 @@ document.getElementById('pauseOverlay').addEventListener('click', (e)=>{
 });
 
 document.getElementById('leaderboardBtn').addEventListener('click', openLeaderboard);
+document.getElementById('dailyChallengeBtn')?.addEventListener('click', startDailyChallenge);
+renderDailyChallenge();
 document.getElementById('closeLeaderboard').addEventListener('click', ()=> document.getElementById('leaderboardOverlay').classList.remove('open'));
 document.getElementById('leaderboardOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'leaderboardOverlay') e.currentTarget.classList.remove('open'); });
 
